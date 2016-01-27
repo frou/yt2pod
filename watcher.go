@@ -141,15 +141,22 @@ func (w *watcher) download(vi ytVidInfo) error {
 }
 
 func (w *watcher) writeFeed(initial bool) error {
+	feedDesc := new(bytes.Buffer)
+	fmt.Fprint(feedDesc, "Generated based on YouTube channel ",
+		w.show().YTReadableChannelName, " (videos published from ",
+		w.show().EpochStr, " onwards")
+	if w.show().TitleFilterStr != "" {
+		fmt.Fprintf(feedDesc, " and with titles matching regexp \"%s\"",
+			w.show().TitleFilterStr)
+	}
+	fmt.Fprint(feedDesc, " only)")
+
 	feedBuilder := &podcasts.Podcast{
-		Title:     w.show().Name,
-		Link:      w.cfg.servingLink(w.show().feedPath()),
-		Copyright: w.show().YTReadableChannelName,
-		Language:  "en",
-		Description: fmt.Sprintf("Generated based on YouTube channel %s "+
-			"(videos from %s onwards whose title contains \"%s\")",
-			w.show().YTReadableChannelName, w.show().EpochStr,
-			w.show().TitleFilterStr),
+		Title:       w.show().Name,
+		Link:        w.cfg.servingLink(w.show().feedPath()),
+		Copyright:   w.show().YTReadableChannelName,
+		Language:    "en",
+		Description: feedDesc.String(),
 	}
 
 	audioType := "audio/" + downloadAudioFormat
