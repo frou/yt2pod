@@ -1,0 +1,274 @@
+package main
+
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"os/exec"
+	"strings"
+	"time"
+
+	"google.golang.org/api/youtube/v3"
+
+	"github.com/jbub/podcasts"
+)
+
+type watcher struct {
+	ytAPI         *youtube.Service
+	cfg           *config
+	showIndex     int
+	checkInterval time.Duration
+
+	lastChecked  time.Time
+	ytAPIRespite time.Duration
+
+	vids []ytVidInfo
+}
+
+func newWatcher(ytAPI *youtube.Service, cfg *config, showIndex int,
+	checkInterval time.Duration) (*watcher, error) {
+
+	w := watcher{
+		ytAPI:         ytAPI,
+		cfg:           cfg,
+		showIndex:     showIndex,
+		checkInterval: checkInterval,
+	}
+	// Up front, check that the YouTube API is working. Do this by fetching the
+	// name of the channel and its 'avatar' image (both made use of later).
+	err := w.getChannelInfo()
+	return &w, err
+}
+
+func (w *watcher) show() *show {
+	return &w.cfg.Shows[w.showIndex]
+}
+
+func (w *watcher) watch() {
+	initialCheck := true
+	downloadProblemVids := make(map[string]ytVidInfo)
+	for {
+		// Sleep until it's time for a check.
+		elapsed := time.Since(w.lastChecked)
+		es, cs := elapsed.Seconds(), w.checkInterval.Seconds()
+		if es < cs {
+			remaining := cs - es
+			time.Sleep(time.Duration(remaining) * time.Second)
+		}
+
+		// After the initial check, only vids published since the last check
+		// need be queried for.
+		var pubdAfter time.Time
+		if initialCheck {
+			pubdAfter = w.show().Epoch
+		} else {
+			pubdAfter = w.lastChecked
+		}
+
+		latestVids, err := w.getLatestVids(pubdAfter)
+		if err != nil {
+			log.Printf("%s: getLatestVids failed: %v", w.show(), err)
+			if w.ytAPIRespite > 0 {
+				log.Printf("%s: giving YouTube API %v respite",
+					w.show(), w.ytAPIRespite)
+				time.Sleep(w.ytAPIRespite)
+				w.ytAPIRespite = 0
+			}
+			continue
+		}
+		if len(latestVids) == 0 &&
+			// During the initial check, even if there are no vids, the feed
+			// file still needs to be written (in case it doesn't exist yet).
+			!initialCheck {
+			continue
+		}
+		w.vids = append(w.vids, latestVids...)
+		log.Printf("%s: %d videos of interest (total matching filter now %d)",
+			w.show(), len(latestVids), len(w.vids))
+		for _, vi := range latestVids {
+			if err := w.download(vi); err != nil {
+				log.Printf("%s: download failed: %v", w.show(), err)
+				downloadProblemVids[vi.id] = vi
+			}
+		}
+
+		// Try and resolve vids that had download problems during this (and
+		// previous) checks.
+		if n := len(downloadProblemVids); n > 0 {
+			log.Printf("%s: there are %d problem vids", w.show(), n)
+		}
+		for _, vi := range downloadProblemVids {
+			err := w.download(vi)
+			if err == nil {
+				delete(downloadProblemVids, vi.id)
+				log.Printf("%s: resolved problem vid %s", w.show(), vi)
+			}
+		}
+
+		// Write the podcast feed XML to disk.
+		if err := w.writeFeed(initialCheck); err != nil {
+			log.Printf("%s: writeFeed failed: %v", w.show(), err)
+		}
+		initialCheck = false
+	}
+}
+
+func (w *watcher) download(vi ytVidInfo) error {
+	diskPath := vi.episodePath()
+	if _, err := os.Stat(diskPath); err == nil {
+		// log.Printf("%s: %s already downloaded", w.show(), vi)
+		return nil
+	}
+
+	line := fmt.Sprintf("%s -f %s -o %s -- %s",
+		downloadCmdName, downloadAudioFormat, diskPath, vi)
+	log.Printf("%s: Running: %s", w.show(), line)
+
+	var stderr bytes.Buffer
+	lineSplit := strings.Split(line, " ")
+	cmd := exec.Command(lineSplit[0], lineSplit[1:]...)
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	if err != nil {
+		err = fmt.Errorf("%v: %s", err, stderr.String())
+	}
+	return err
+}
+
+func (w *watcher) writeFeed(initial bool) error {
+	feedBuilder := &podcasts.Podcast{
+		Title:     w.show().Name,
+		Link:      w.cfg.servingLink(w.show().feedPath()),
+		Copyright: w.show().YTReadableChannelName,
+		Language:  "en",
+		Description: fmt.Sprintf("Generated based on YouTube channel %s "+
+			"(videos from %s onwards whose title contains \"%s\")",
+			w.show().YTReadableChannelName, w.show().EpochStr,
+			w.show().TitleFilterStr),
+	}
+
+	audioType := "audio/" + downloadAudioFormat
+	for _, vi := range w.vids {
+		f, err := os.Open(vi.episodePath())
+		if err != nil {
+			return err
+		}
+		finfo, err := f.Stat()
+		f.Close()
+		if err != nil {
+			return err
+		}
+
+		feedBuilder.AddItem(&podcasts.Item{
+			Title:   vi.title,
+			Summary: vi.desc,
+			GUID:    w.cfg.servingLink(vi.episodePath()),
+			PubDate: &podcasts.PubDate{Time: vi.published},
+			Enclosure: &podcasts.Enclosure{
+				URL:    w.cfg.servingLink(vi.episodePath()),
+				Length: fmt.Sprint(finfo.Size()),
+				Type:   audioType,
+			},
+		})
+	}
+
+	img := podcasts.Image(w.cfg.servingLink(w.show().artPath()))
+	feed, err := feedBuilder.Feed(img)
+	if err != nil {
+		return err
+	}
+	f, err := os.Create(w.show().feedPath())
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	log.Printf("%s: Writing out feed", w.show())
+	if err := feed.Write(f); err != nil {
+		return err
+	}
+	fmt.Fprintln(f)
+	if initial {
+		log.Printf("%s: Feed is served via %s", w.show(), feedBuilder.Link)
+	}
+	return nil
+}
+
+func (w *watcher) getLatestVids(pubdAfter time.Time) ([]ytVidInfo, error) {
+	var (
+		latestVids    []ytVidInfo
+		nextPageToken string
+	)
+	for {
+		apiReq := w.ytAPI.Search.List("id,snippet").
+			ChannelId(w.show().YTChannelID).
+			Type("video").
+			PublishedAfter(pubdAfter.Format(time.RFC3339)).
+			Order("date").
+			MaxResults(50).
+			PageToken(nextPageToken)
+		checkTime := time.Now()
+		apiResp, err := apiReq.Do()
+		if err != nil {
+			w.ytAPIRespite = 5 * time.Minute
+			return nil, err
+		}
+		w.lastChecked = checkTime
+		for _, item := range apiResp.Items {
+			if item.Id.Kind != "youtube#video" {
+				return nil, errors.New("non-video in response items")
+			}
+			if !w.show().TitleFilter.MatchString(item.Snippet.Title) {
+				continue
+			}
+			pubd, err := time.Parse(time.RFC3339, item.Snippet.PublishedAt)
+			if err != nil {
+				return nil, err
+			}
+			vi := ytVidInfo{
+				id:        item.Id.VideoId,
+				published: pubd,
+				title:     item.Snippet.Title,
+				desc:      item.Snippet.Description,
+			}
+			latestVids = append(latestVids, vi)
+		}
+		nextPageToken = apiResp.NextPageToken
+		if nextPageToken == "" {
+			break
+		}
+	}
+	return latestVids, nil
+}
+
+func (w *watcher) getChannelInfo() error {
+	apiReq := w.ytAPI.Channels.List("snippet").
+		Id(w.show().YTChannelID).
+		MaxResults(1)
+	apiResp, err := apiReq.Do()
+	if err != nil {
+		return err
+	}
+	if len(apiResp.Items) != 1 || apiResp.Items[0].Kind != "youtube#channel" {
+		return errors.New("expected exactly 1 channel in response items")
+	}
+
+	item := apiResp.Items[0]
+	w.show().YTReadableChannelName = item.Snippet.Title
+
+	thumbURL := item.Snippet.Thumbnails.High.Url
+	thumbResp, err := http.Get(thumbURL)
+	if err != nil {
+		return err
+	}
+	defer thumbResp.Body.Close()
+	buf, err := ioutil.ReadAll(thumbResp.Body)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(w.show().artPath(), buf, 0644)
+}
