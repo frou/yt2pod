@@ -105,7 +105,7 @@ func (w *watcher) watch() {
 			err := w.download(vi)
 			if err == nil {
 				delete(downloadProblemVids, vi.id)
-				log.Printf("%s: resolved problem vid %s", w.show(), vi)
+				log.Printf("%s: resolved problem vid %s", w.show(), vi.id)
 			}
 		}
 
@@ -120,12 +120,12 @@ func (w *watcher) watch() {
 func (w *watcher) download(vi ytVidInfo) error {
 	diskPath := vi.episodePath()
 	if _, err := os.Stat(diskPath); err == nil {
-		// log.Printf("%s: %s already downloaded", w.show(), vi)
+		// log.Printf("%s: %s already downloaded", w.show(), vi.id)
 		return nil
 	}
 
 	line := fmt.Sprintf("%s -f %s -o %s -- %s",
-		downloadCmdName, downloadAudioFormat, diskPath, vi)
+		downloadCmdName, downloadAudioFormat, diskPath, vi.id)
 	log.Printf("%s: Running: %s", w.show(), line)
 
 	var stderr bytes.Buffer
@@ -154,14 +154,14 @@ func (w *watcher) writeFeed(initial bool) error {
 
 	audioType := "audio/" + downloadAudioFormat
 	for _, vi := range w.vids {
+		var epSize int64
 		f, err := os.Open(vi.episodePath())
-		if err != nil {
-			return err
-		}
-		finfo, err := f.Stat()
-		f.Close()
-		if err != nil {
-			return err
+		if err == nil {
+			info, err := f.Stat()
+			if err == nil {
+				epSize = info.Size()
+			}
+			f.Close()
 		}
 
 		feedBuilder.AddItem(&podcasts.Item{
@@ -171,7 +171,7 @@ func (w *watcher) writeFeed(initial bool) error {
 			PubDate: &podcasts.PubDate{Time: vi.published},
 			Enclosure: &podcasts.Enclosure{
 				URL:    w.cfg.servingLink(vi.episodePath()),
-				Length: fmt.Sprint(finfo.Size()),
+				Length: fmt.Sprint(epSize),
 				Type:   audioType,
 			},
 		})
