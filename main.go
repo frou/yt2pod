@@ -72,7 +72,7 @@ func setup() (*config, error) {
 	if *useSyslog {
 		sender := filepath.Base(os.Args[0])
 		var err error
-		w, err = syslog.New(syslog.LOG_DAEMON|syslog.LOG_NOTICE, sender)
+		w, err = syslog.New(syslog.LOG_DAEMON|syslog.LOG_INFO, sender)
 		if err != nil {
 			return nil, err
 		}
