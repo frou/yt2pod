@@ -75,11 +75,11 @@ type show struct {
 }
 
 func (s *show) feedPath() string {
-	return filepath.Join(metaSubdir, s.ShortName+".xml")
+	return filepath.Join(dataSubdirMetadata, s.ShortName+".xml")
 }
 
 func (s *show) artPath() string {
-	return filepath.Join(metaSubdir, s.ShortName+".jpg")
+	return filepath.Join(dataSubdirMetadata, s.ShortName+".jpg")
 }
 
 func (s *show) String() string {
