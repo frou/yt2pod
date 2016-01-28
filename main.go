@@ -53,12 +53,7 @@ func main() {
 	}
 
 	apiKey := cfg.YTDataAPIKey
-	if apiKey == "" {
-		log.Fatal("Config file should contain a YouTube Data API key. See: " +
-			"https://developers.google.com/youtube/registering_an_application")
-	}
 	log.Printf("Using YouTube Data API key ending %s", apiKey[len(apiKey)-5:])
-
 	for i := range cfg.Shows {
 		ytAPI, err := youtube.New(&http.Client{
 			Transport: &transport.APIKey{Key: apiKey},

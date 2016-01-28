@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -9,20 +10,35 @@ import (
 	"time"
 )
 
-func loadConfig(path string) (*config, error) {
+func loadConfig(path string) (c *config, err error) {
+	defer func() {
+		if err != nil {
+			err = errors.New("config: " + err.Error())
+		}
+	}()
+
+	// Load & decode config from disk.
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	var c config
-	if err := json.Unmarshal(buf, &c); err != nil {
+	c = new(config)
+	if err := json.Unmarshal(buf, c); err != nil {
 		return nil, err
+	}
+
+	// Do some sanity checks on it.
+	if c.YTDataAPIKey == "" {
+		return nil, errors.New("lacking YouTube Data API key")
+	}
+	if min := 1; c.CheckIntervalMinutes < min {
+		return nil, fmt.Errorf("check interval must be >= %d minutes", min)
 	}
 	shortNameSet := make(map[string]struct{})
 	for i := range c.Shows {
+		// Parse Epoch
 		var t time.Time
 		var err error
-		// Parse Epoch
 		if es := c.Shows[i].EpochStr; es != "" {
 			t, err = time.Parse("2006-01-02", es)
 			if err != nil {
@@ -38,13 +54,15 @@ func loadConfig(path string) (*config, error) {
 		}
 		c.Shows[i].TitleFilter = re
 
+		// Check for show shortname (in effect primary key) collisions.
 		sn := c.Shows[i].ShortName
 		if _, found := shortNameSet[sn]; found {
 			return nil, fmt.Errorf("multiple shows using shortname \"%s\"", sn)
 		}
 		shortNameSet[sn] = struct{}{}
 	}
-	return &c, err
+
+	return c, err
 }
 
 // ------------------------------------------------------------
