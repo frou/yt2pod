@@ -18,6 +18,7 @@ func loadConfig(path string) (*config, error) {
 	if err := json.Unmarshal(buf, &c); err != nil {
 		return nil, err
 	}
+	shortNameSet := make(map[string]struct{})
 	for i := range c.Shows {
 		// Parse Epoch
 		t, err := time.Parse("2006-01-02", c.Shows[i].EpochStr)
@@ -32,6 +33,12 @@ func loadConfig(path string) (*config, error) {
 			return nil, err
 		}
 		c.Shows[i].TitleFilter = re
+
+		sn := c.Shows[i].ShortName
+		if _, found := shortNameSet[sn]; found {
+			return nil, fmt.Errorf("multiple shows using shortname \"%s\"", sn)
+		}
+		shortNameSet[sn] = struct{}{}
 	}
 	return &c, err
 }
