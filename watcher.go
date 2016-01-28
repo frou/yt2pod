@@ -144,14 +144,14 @@ func (w *watcher) download(vi ytVidInfo) error {
 
 func (w *watcher) writeFeed(initial bool) error {
 	feedDesc := new(bytes.Buffer)
-	fmt.Fprint(feedDesc, "Generated based on YouTube channel ",
-		w.show().YTReadableChannelName, " (videos published from ",
+	fmt.Fprint(feedDesc, "Generated based on YouTube channel \"",
+		w.show().YTReadableChannelName, "\" videos published from ",
 		w.show().EpochStr, " onwards")
 	if w.show().TitleFilterStr != "" {
 		fmt.Fprintf(feedDesc, " and with titles matching \"%s\"",
 			w.show().TitleFilterStr)
 	}
-	fmt.Fprintf(feedDesc, " only) [%s]", versionString())
+	fmt.Fprintf(feedDesc, " [%s]", versionString())
 
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.show().Name,
@@ -202,7 +202,8 @@ func (w *watcher) writeFeed(initial bool) error {
 	}
 	fmt.Fprintln(f)
 	if initial {
-		log.Printf("%s: Configured feed URL is %s", w.show(), feedBuilder.Link)
+		log.Printf("%s: Feed URL is configured as %s",
+			w.show(), w.cfg.servingLink(w.show().feedPath()))
 	}
 	return nil
 }
