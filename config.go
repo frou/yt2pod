@@ -20,10 +20,14 @@ func loadConfig(path string) (*config, error) {
 	}
 	shortNameSet := make(map[string]struct{})
 	for i := range c.Shows {
+		var t time.Time
+		var err error
 		// Parse Epoch
-		t, err := time.Parse("2006-01-02", c.Shows[i].EpochStr)
-		if err != nil {
-			return nil, err
+		if es := c.Shows[i].EpochStr; es != "" {
+			t, err = time.Parse("2006-01-02", es)
+			if err != nil {
+				return nil, err
+			}
 		}
 		c.Shows[i].Epoch = t
 

@@ -65,8 +65,10 @@ func (w *watcher) watch() {
 		var pubdAfter time.Time
 		if initialCheck {
 			pubdAfter = w.show().Epoch
-			log.Printf("%s: Epoch is configured as %v",
-				w.show(), w.show().EpochStr)
+			if !w.show().Epoch.IsZero() {
+				log.Printf("%s: Epoch is configured as %s",
+					w.show(), w.show().EpochStr)
+			}
 		} else {
 			pubdAfter = w.lastChecked
 		}
@@ -143,12 +145,17 @@ func (w *watcher) download(vi ytVidInfo) error {
 }
 
 func (w *watcher) writeFeed(initial bool) error {
+	// Construct the feed description blurb. It's kept shorter when the show
+	// has less configuration.
 	feedDesc := new(bytes.Buffer)
-	fmt.Fprint(feedDesc, "Generated based on YouTube channel \"",
-		w.show().YTReadableChannelName, "\" videos published from ",
-		w.show().EpochStr, " onwards")
+	fmt.Fprintf(feedDesc,
+		"Generated based on the videos of YouTube channel \"%s\"",
+		w.show().YTReadableChannelName)
+	if !w.show().Epoch.IsZero() {
+		fmt.Fprintf(feedDesc, " published from %s onwards", w.show().EpochStr)
+	}
 	if w.show().TitleFilterStr != "" {
-		fmt.Fprintf(feedDesc, " and with titles matching \"%s\"",
+		fmt.Fprintf(feedDesc, " with titles matching \"%s\"",
 			w.show().TitleFilterStr)
 	}
 	fmt.Fprintf(feedDesc, " [%s]", versionString())
