@@ -65,15 +65,17 @@ func (w *watcher) watch() {
 		var pubdAfter time.Time
 		if initialCheck {
 			pubdAfter = w.show().Epoch
+			log.Printf("%s: Epoch is configured as %v",
+				w.show(), w.show().EpochStr)
 		} else {
 			pubdAfter = w.lastChecked
 		}
 
 		latestVids, err := w.getLatestVids(pubdAfter)
 		if err != nil {
-			log.Printf("%s: getLatestVids failed: %v", w.show(), err)
+			log.Printf("%s: Getting latest vids failed: %v", w.show(), err)
 			if w.ytAPIRespite > 0 {
-				log.Printf("%s: giving YouTube API %v respite",
+				log.Printf("%s: Giving YouTube API %v respite",
 					w.show(), w.ytAPIRespite)
 				time.Sleep(w.ytAPIRespite)
 				w.ytAPIRespite = 0
@@ -87,11 +89,11 @@ func (w *watcher) watch() {
 			continue
 		}
 		w.vids = append(w.vids, latestVids...)
-		log.Printf("%s: %d videos of interest (total matching filter now %d)",
+		log.Printf("%s: %d vids of interest were published (now %d in total)",
 			w.show(), len(latestVids), len(w.vids))
 		for _, vi := range latestVids {
 			if err := w.download(vi); err != nil {
-				log.Printf("%s: download failed: %v", w.show(), err)
+				log.Printf("%s: Download failed: %v", w.show(), err)
 				downloadProblemVids[vi.id] = vi
 			}
 		}
@@ -99,19 +101,19 @@ func (w *watcher) watch() {
 		// Try and resolve vids that had download problems during this (and
 		// previous) checks.
 		if n := len(downloadProblemVids); n > 0 {
-			log.Printf("%s: there are %d problem vids", w.show(), n)
+			log.Printf("%s: There are %d problem vids", w.show(), n)
 		}
 		for _, vi := range downloadProblemVids {
 			err := w.download(vi)
 			if err == nil {
 				delete(downloadProblemVids, vi.id)
-				log.Printf("%s: resolved problem vid %s", w.show(), vi.id)
+				log.Printf("%s: Resolved problem vid %s", w.show(), vi.id)
 			}
 		}
 
 		// Write the podcast feed XML to disk.
 		if err := w.writeFeed(initialCheck); err != nil {
-			log.Printf("%s: writeFeed failed: %v", w.show(), err)
+			log.Printf("%s: Writing feed failed: %v", w.show(), err)
 		}
 		initialCheck = false
 	}
@@ -146,14 +148,14 @@ func (w *watcher) writeFeed(initial bool) error {
 		w.show().YTReadableChannelName, " (videos published from ",
 		w.show().EpochStr, " onwards")
 	if w.show().TitleFilterStr != "" {
-		fmt.Fprintf(feedDesc, " and with titles matching regexp \"%s\"",
+		fmt.Fprintf(feedDesc, " and with titles matching \"%s\"",
 			w.show().TitleFilterStr)
 	}
-	fmt.Fprint(feedDesc, " only)")
+	fmt.Fprintf(feedDesc, " only) [%s]", versionString())
 
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.show().Name,
-		Link:        w.cfg.servingLink(w.show().feedPath()),
+		Link:        "https://www.youtube.com/channel/" + w.show().YTChannelID,
 		Copyright:   w.show().YTReadableChannelName,
 		Language:    "en",
 		Description: feedDesc.String(),
@@ -184,8 +186,8 @@ func (w *watcher) writeFeed(initial bool) error {
 		})
 	}
 
-	img := podcasts.Image(w.cfg.servingLink(w.show().artPath()))
-	feed, err := feedBuilder.Feed(img)
+	applyImg := podcasts.Image(w.cfg.servingLink(w.show().artPath()))
+	feed, err := feedBuilder.Feed(applyImg)
 	if err != nil {
 		return err
 	}
@@ -200,7 +202,7 @@ func (w *watcher) writeFeed(initial bool) error {
 	}
 	fmt.Fprintln(f)
 	if initial {
-		log.Printf("%s: Feed is served via %s", w.show(), feedBuilder.Link)
+		log.Printf("%s: Configured feed URL is %s", w.show(), feedBuilder.Link)
 	}
 	return nil
 }

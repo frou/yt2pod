@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"time"
 )
@@ -13,5 +14,6 @@ type ytVidInfo struct {
 }
 
 func (vi *ytVidInfo) episodePath() string {
-	return filepath.Join(dataSubdirEpisodes, vi.id)
+	return filepath.Join(dataSubdirEpisodes,
+		fmt.Sprint(vi.id, ".", downloadAudioFormat))
 }
