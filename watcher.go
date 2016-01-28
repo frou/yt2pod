@@ -158,7 +158,7 @@ func (w *watcher) writeFeed(initial bool) error {
 		fmt.Fprintf(feedDesc, " with titles matching \"%s\"",
 			w.show().TitleFilterStr)
 	}
-	fmt.Fprintf(feedDesc, " [%s]", versionString())
+	fmt.Fprintf(feedDesc, " [%s]", versionLabel)
 
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.show().Name,

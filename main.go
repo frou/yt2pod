@@ -42,6 +42,8 @@ var (
 
 	showVersion = flag.Bool("version", false,
 		"show version information then exit")
+
+	versionLabel = fmt.Sprintf("yt2pod v%s", version)
 )
 
 func main() {
@@ -80,11 +82,11 @@ func main() {
 
 func setup() (*config, error) {
 	stdext.SetPreFlagsUsageMessage(
-		versionString() + " :: https://github.com/frou/yt2pod")
+		versionLabel + " :: https://github.com/frou/yt2pod")
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Fprintln(os.Stderr, versionString())
+		fmt.Fprintln(os.Stderr, versionLabel)
 		os.Exit(0)
 	}
 
@@ -142,8 +144,4 @@ func setup() (*config, error) {
 	}
 
 	return cfg, nil
-}
-
-func versionString() string {
-	return fmt.Sprintf("yt2pod v%s", version)
 }
