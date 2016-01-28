@@ -13,5 +13,5 @@ type ytVidInfo struct {
 }
 
 func (vi *ytVidInfo) episodePath() string {
-	return filepath.Join(epSubdir, vi.id)
+	return filepath.Join(dataSubdirEpisodes, vi.id)
 }
