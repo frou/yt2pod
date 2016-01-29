@@ -178,17 +178,17 @@ func (w *watcher) writeFeed(initial bool) error {
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,
 			Summary: vi.desc,
-			GUID:    w.cfg.servingLink(vi.episodePath()),
+			GUID:    w.cfg.urlFor(vi.episodePath()),
 			PubDate: &podcasts.PubDate{Time: vi.published},
 			Enclosure: &podcasts.Enclosure{
-				URL:    w.cfg.servingLink(vi.episodePath()),
+				URL:    w.cfg.urlFor(vi.episodePath()),
 				Length: fmt.Sprint(epSize),
 				Type:   audioType,
 			},
 		})
 	}
 
-	applyImg := podcasts.Image(w.cfg.servingLink(w.show.artPath()))
+	applyImg := podcasts.Image(w.cfg.urlFor(w.show.artPath()))
 	feed, err := feedBuilder.Feed(applyImg)
 	if err != nil {
 		return err
@@ -204,8 +204,8 @@ func (w *watcher) writeFeed(initial bool) error {
 	}
 	fmt.Fprintln(f)
 	if initial {
-		log.Printf("%s: Feed URL is configured as %s",
-			w.show, w.cfg.servingLink(w.show.feedPath()))
+		log.Printf("%s: URL for feed is configured as %s",
+			w.show, w.cfg.urlFor(w.show.feedPath()))
 	}
 	return nil
 }

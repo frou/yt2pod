@@ -72,7 +72,7 @@ type config struct {
 	Shows                []show `json:"shows"`
 }
 
-func (c *config) servingLink(resource string) string {
+func (c *config) urlFor(resource string) string {
 	return fmt.Sprintf("http://%s:%d/%s", c.ServeHost, c.ServePort, resource)
 }
 
