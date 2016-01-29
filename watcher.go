@@ -48,7 +48,7 @@ func (w *watcher) show() *show {
 	return &w.cfg.Shows[w.showIndex]
 }
 
-func (w *watcher) watch() {
+func (w *watcher) begin() {
 	initialCheck := true
 	downloadProblemVids := make(map[string]ytVidInfo)
 	for {

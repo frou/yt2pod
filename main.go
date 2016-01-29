@@ -66,7 +66,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		go wat.watch()
+		go wat.begin()
 	}
 
 	// Run a webserver to serve the episode and metadata files.
