@@ -44,15 +44,12 @@ func newWatcher(ytAPI *youtube.Service, cfg *config, show *show,
 }
 
 func (w *watcher) begin() {
-	initialCheck := true
-	downloadProblemVids := make(map[string]ytVidInfo)
+	initialCheck, problemVids := true, make(map[string]ytVidInfo)
 	for {
 		// Sleep until it's time for a check.
 		elapsed := time.Since(w.lastChecked)
-		es, cs := elapsed.Seconds(), w.checkInterval.Seconds()
-		if es < cs {
-			remaining := cs - es
-			time.Sleep(time.Duration(remaining) * time.Second)
+		if elapsed < w.checkInterval {
+			time.Sleep(w.checkInterval - elapsed)
 		}
 
 		// After the initial check, only vids published since the last check
@@ -91,26 +88,30 @@ func (w *watcher) begin() {
 		for _, vi := range latestVids {
 			if err := w.download(vi); err != nil {
 				log.Printf("%s: Download failed: %v", w.show, err)
-				downloadProblemVids[vi.id] = vi
+				problemVids[vi.id] = vi
 			}
 		}
 
 		// Try and resolve vids that had download problems during this (and
 		// previous) checks.
-		if n := len(downloadProblemVids); n > 0 {
+		if n := len(problemVids); n > 0 {
 			log.Printf("%s: There are %d problem vids", w.show, n)
 		}
-		for _, vi := range downloadProblemVids {
+		for _, vi := range problemVids {
 			err := w.download(vi)
 			if err == nil {
-				delete(downloadProblemVids, vi.id)
+				delete(problemVids, vi.id)
 				log.Printf("%s: Resolved problem vid %s", w.show, vi.id)
 			}
 		}
 
 		// Write the podcast feed XML to disk.
-		if err := w.writeFeed(initialCheck); err != nil {
+		if err := w.writeFeed(); err != nil {
 			log.Printf("%s: Writing feed failed: %v", w.show, err)
+		}
+		if initialCheck {
+			log.Printf("%s: URL for feed is configured as %s",
+				w.show, w.cfg.urlFor(w.show.feedPath()))
 		}
 		initialCheck = false
 	}
@@ -139,7 +140,7 @@ func (w *watcher) download(vi ytVidInfo) error {
 	return err
 }
 
-func (w *watcher) writeFeed(initial bool) error {
+func (w *watcher) writeFeed() error {
 	// Construct the feed description blurb. It's kept shorter when the show
 	// has less configuration.
 	feedDesc := new(bytes.Buffer)
@@ -203,10 +204,6 @@ func (w *watcher) writeFeed(initial bool) error {
 		return err
 	}
 	fmt.Fprintln(f)
-	if initial {
-		log.Printf("%s: URL for feed is configured as %s",
-			w.show, w.cfg.urlFor(w.show.feedPath()))
-	}
 	return nil
 }
 
