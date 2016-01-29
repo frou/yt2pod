@@ -48,7 +48,9 @@ func loadConfig(path string) (c *config, err error) {
 		c.Shows[i].Epoch = t
 
 		// Parse Title Filter
-		re, err := regexp.Compile(c.Shows[i].TitleFilterStr)
+		re, err := regexp.Compile(
+			// Ensure the re does case-insensitive matching.
+			fmt.Sprintf("(?i:%s)", c.Shows[i].TitleFilterStr))
 		if err != nil {
 			return nil, err
 		}
