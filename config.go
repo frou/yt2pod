@@ -11,12 +11,6 @@ import (
 )
 
 func loadConfig(path string) (c *config, err error) {
-	defer func() {
-		if err != nil {
-			err = errors.New("config: " + err.Error())
-		}
-	}()
-
 	// Load & decode config from disk.
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -29,7 +23,7 @@ func loadConfig(path string) (c *config, err error) {
 
 	// Do some sanity checks on it.
 	if c.YTDataAPIKey == "" {
-		return nil, errors.New("lacking YouTube Data API key")
+		return nil, errors.New("missing YouTube Data API key")
 	}
 	if min := 1; c.CheckIntervalMinutes < min {
 		return nil, fmt.Errorf("check interval must be >= %d minutes", min)

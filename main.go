@@ -118,7 +118,7 @@ func setup() (*config, error) {
 	// Load config from disk.
 	cfg, err := loadConfig(*configPath)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("config: " + err.Error())
 	}
 
 	// Create the data directory.
