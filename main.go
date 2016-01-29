@@ -61,7 +61,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		wat, err := newWatcher(ytAPI, cfg, i,
+		wat, err := newWatcher(ytAPI, cfg, &cfg.Shows[i],
 			time.Duration(cfg.CheckIntervalMinutes)*time.Minute)
 		if err != nil {
 			log.Fatal(err)
