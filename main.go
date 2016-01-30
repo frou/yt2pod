@@ -31,7 +31,7 @@ const (
 	rwx_rx_rx = 0755
 	rw_r_r    = 0644
 
-	version = "0.1"
+	version = "0.9.0"
 )
 
 var (
