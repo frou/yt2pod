@@ -61,6 +61,11 @@ func (w *watcher) begin() {
 				log.Printf("%s: Epoch is configured as %s",
 					w.show, w.show.EpochStr)
 			}
+			// Write out the feed early. Even though it contains no items yet,
+			// it's better that the XML file exists to be served.
+			if err := w.writeFeed(); err != nil {
+				log.Printf("%s: Writing feed failed: %v", w.show, err)
+			}
 		} else {
 			pubdAfter = w.lastChecked
 		}
@@ -76,12 +81,11 @@ func (w *watcher) begin() {
 			}
 			continue
 		}
-		if len(latestVids) == 0 &&
-			// During the initial check, even if there are no vids, the feed
-			// file still needs to be written (in case it doesn't exist yet).
-			!initialCheck {
+		if len(latestVids) == 0 {
+			// Nothing to do. Go back to sleep.
 			continue
 		}
+
 		w.vids = append(w.vids, latestVids...)
 		log.Printf("%s: %d vids of interest published (making %d in total)",
 			w.show, len(latestVids), len(w.vids))
