@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/x509"
 	"errors"
 	"flag"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"log/syslog"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -123,6 +125,20 @@ func setup() (*config, error) {
 		return nil, errors.New(downloadCmdName + " command is not available")
 	}
 	log.Printf("Version of %s is %s", downloadCmdName, output)
+
+	// Up front, check that a GET to a http_s_ server works (which needs CA
+	// certs to be present and correct in the OS)
+	secureResp, err := http.Get("https://www.googleapis.com/")
+	if err != nil {
+		if urlErr, ok := err.(*url.Error); ok {
+			if sysRootsErr, ok := urlErr.Err.(x509.SystemRootsError); ok {
+				log.Fatal(sysRootsErr)
+			}
+		}
+		log.Print(err)
+	} else {
+		secureResp.Body.Close()
+	}
 
 	// Create the data directory.
 	err = os.Mkdir(*dataPath, 0755)
