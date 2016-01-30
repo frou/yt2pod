@@ -110,16 +110,19 @@ func setup() (*config, error) {
 	log.SetOutput(w)
 	log.SetFlags(flags)
 
-	// Up front, check that the youtube-dl command is available.
-	if err = exec.Command(downloadCmdName, "--version").Run(); err != nil {
-		return nil, errors.New(downloadCmdName + " command is not available")
-	}
-
 	// Load config from disk.
 	cfg, err := loadConfig(*configPath)
 	if err != nil {
 		return nil, errors.New("config: " + err.Error())
 	}
+	log.Print("Config loaded from ", *configPath)
+
+	// Up front, check that the youtube-dl command is available.
+	output, err := exec.Command(downloadCmdName, "--version").Output()
+	if err != nil {
+		return nil, errors.New(downloadCmdName + " command is not available")
+	}
+	log.Printf("Version of %s is %s", downloadCmdName, output)
 
 	// Create the data directory.
 	err = os.Mkdir(*dataPath, 0755)

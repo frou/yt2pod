@@ -83,7 +83,7 @@ func (w *watcher) begin() {
 			continue
 		}
 		w.vids = append(w.vids, latestVids...)
-		log.Printf("%s: %d vids of interest were published (now %d in total)",
+		log.Printf("%s: %d vids of interest published (making %d in total)",
 			w.show, len(latestVids), len(w.vids))
 		for _, vi := range latestVids {
 			if err := w.download(vi); err != nil {
