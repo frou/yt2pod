@@ -124,7 +124,7 @@ func (w *watcher) download(vi ytVidInfo) error {
 		return nil
 	}
 
-	line := fmt.Sprintf("%s -f %s -o %s -- %s",
+	line := fmt.Sprintf("%s -f %s -o %s --socket-timeout 30 -- %s",
 		downloadCmdName, downloadAudioFormat, diskPath, vi.id)
 	log.Printf("%s: Running: %s", w.show, line)
 
