@@ -14,7 +14,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"time"
 
 	"github.com/frou/stdext"
 
@@ -28,6 +27,9 @@ const (
 
 	dataSubdirEpisodes = "ep"
 	dataSubdirMetadata = "meta"
+
+	rwx_rx_rx = 0755
+	rw_r_r    = 0644
 
 	version = "0.1"
 )
@@ -63,8 +65,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		wat, err := newWatcher(ytAPI, cfg, &cfg.Shows[i],
-			time.Duration(cfg.CheckIntervalMinutes)*time.Minute)
+		wat, err := newWatcher(ytAPI, cfg, &cfg.Shows[i])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -117,9 +118,9 @@ func setup() (*config, error) {
 	if err != nil {
 		return nil, errors.New("config: " + err.Error())
 	}
-	log.Print("Config loaded from ", *configPath)
+	log.Print("Config successfully loaded from ", *configPath)
 
-	// Up front, check that the youtube-dl command is available.
+	// Up front, check that the youtube downloading command is available.
 	output, err := exec.Command(downloadCmdName, "--version").Output()
 	if err != nil {
 		return nil, errors.New(downloadCmdName + " command is not available")
@@ -141,17 +142,17 @@ func setup() (*config, error) {
 	}
 
 	// Create the data directory.
-	err = os.Mkdir(*dataPath, 0755)
+	err = os.Mkdir(*dataPath, rwx_rx_rx)
 	if err != nil && !os.IsExist(err) {
 		return nil, err
 	}
-	// Change into it (don't want the webserver to expose our config file).
+	// Change into it (don't want to expose our config file when webserving).
 	if err := os.Chdir(*dataPath); err != nil {
 		return nil, err
 	}
-	// Create data sub directories.
+	// Create its subdirectories.
 	for _, name := range []string{dataSubdirMetadata, dataSubdirEpisodes} {
-		err := os.Mkdir(name, 0755)
+		err := os.Mkdir(name, rwx_rx_rx)
 		if err != nil && !os.IsExist(err) {
 			return nil, err
 		}

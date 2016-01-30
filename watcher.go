@@ -28,14 +28,14 @@ type watcher struct {
 	vids         []ytVidInfo
 }
 
-func newWatcher(ytAPI *youtube.Service, cfg *config, show *show,
-	checkInterval time.Duration) (*watcher, error) {
+func newWatcher(
+	ytAPI *youtube.Service, cfg *config, show *show) (*watcher, error) {
 
 	w := watcher{
 		ytAPI:         ytAPI,
 		cfg:           cfg,
 		show:          show,
-		checkInterval: checkInterval,
+		checkInterval: time.Duration(cfg.CheckIntervalMinutes) * time.Minute,
 	}
 	// Up front, check that the YouTube API is working. Do this by fetching the
 	// name of the channel and its 'avatar' image (both made use of later).
@@ -52,8 +52,8 @@ func (w *watcher) begin() {
 			time.Sleep(w.checkInterval - elapsed)
 		}
 
-		// After the initial check, only vids published after the last check
-		// need be queried for.
+		// The initial check does a full query for vids. Subsequent checks need
+		// only query vids published after the last check.
 		var pubdAfter time.Time
 		if initialCheck {
 			pubdAfter = w.show.Epoch
@@ -62,7 +62,7 @@ func (w *watcher) begin() {
 					w.show, w.show.EpochStr)
 			}
 			// Write out the feed early. Even though it contains no items yet,
-			// it's better that the XML file exists to be served.
+			// it's better that the XML file exist in some form vs 404ing.
 			if err := w.writeFeed(); err != nil {
 				log.Printf("%s: Writing feed failed: %v", w.show, err)
 			}
@@ -82,8 +82,8 @@ func (w *watcher) begin() {
 			continue
 		}
 		if len(latestVids) == 0 {
-			// Nothing to do. Go back to sleep.
 			initialCheck = false
+			// Nothing to do. Go back to sleep.
 			continue
 		}
 
@@ -115,6 +115,7 @@ func (w *watcher) begin() {
 			log.Printf("%s: Writing feed failed: %v", w.show, err)
 		}
 		if initialCheck {
+			// This is helpful to appear in the log (but only once per show).
 			log.Printf("%s: URL for feed is configured as %s",
 				w.show, w.cfg.urlFor(w.show.feedPath()))
 		}
@@ -129,25 +130,26 @@ func (w *watcher) download(vi ytVidInfo) error {
 		return nil
 	}
 
-	line := fmt.Sprintf("%s -f %s -o %s --socket-timeout 30 -- %s",
+	cmdLine := fmt.Sprintf("%s -f %s -o %s --socket-timeout 30 -- %s",
 		downloadCmdName, downloadAudioFormat, diskPath, vi.id)
-	log.Printf("%s: Running: %s", w.show, line)
+	log.Printf("%s: Running: %s", w.show, cmdLine)
 
-	var stderr bytes.Buffer
-	lineSplit := strings.Split(line, " ")
-	cmd := exec.Command(lineSplit[0], lineSplit[1:]...)
-	cmd.Stderr = &stderr
+	var errBuf bytes.Buffer
+	cmdLineSplit := strings.Split(cmdLine, " ")
+	cmd := exec.Command(cmdLineSplit[0], cmdLineSplit[1:]...)
+	cmd.Stderr = &errBuf
 
 	err := cmd.Run()
 	if err != nil {
-		err = fmt.Errorf("%v: %s", err, stderr.String())
+		err = fmt.Errorf("%v: %s", err, errBuf.String())
 	}
 	return err
 }
 
 func (w *watcher) writeFeed() error {
-	// Construct the feed description blurb. It's kept shorter when the show
-	// has less configuration.
+	// Construct the blurb used in the feed description that's likely displayed
+	// to podcast client users. It's kept shorter when the show has less
+	// configuration.
 	feedDesc := new(bytes.Buffer)
 	fmt.Fprintf(feedDesc,
 		"Generated based on the videos of YouTube channel \"%s\"",
@@ -161,6 +163,7 @@ func (w *watcher) writeFeed() error {
 	}
 	fmt.Fprintf(feedDesc, " [%s]", versionLabel)
 
+	// Use the podcasts package to construct the XML for the file.
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.show.Name,
 		Link:        "https://www.youtube.com/channel/" + w.show.YTChannelID,
@@ -168,11 +171,12 @@ func (w *watcher) writeFeed() error {
 		Language:    "en",
 		Description: feedDesc.String(),
 	}
-
-	audioType := "audio/" + downloadAudioFormat
 	for _, vi := range w.vids {
 		var epSize int64
 		f, err := os.Open(vi.episodePath())
+		// TODO: Would it be better to omit the enclosure length attribute if
+		// it is not currently known than to give it value 0? The RSS spec says
+		// it is a _required_ attribute, mind.
 		if err == nil {
 			info, err := f.Stat()
 			if err == nil {
@@ -180,7 +184,6 @@ func (w *watcher) writeFeed() error {
 			}
 			f.Close()
 		}
-
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,
 			Summary: vi.desc,
@@ -189,7 +192,7 @@ func (w *watcher) writeFeed() error {
 			Enclosure: &podcasts.Enclosure{
 				URL:    w.cfg.urlFor(vi.episodePath()),
 				Length: fmt.Sprint(epSize),
-				Type:   audioType,
+				Type:   "audio/" + downloadAudioFormat,
 			},
 		})
 	}
@@ -199,7 +202,8 @@ func (w *watcher) writeFeed() error {
 	if err != nil {
 		return err
 	}
-	f, err := os.Create(w.show.feedPath())
+	f, err := os.OpenFile(w.show.feedPath(),
+		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, rw_r_r)
 	if err != nil {
 		return err
 	}
@@ -228,6 +232,7 @@ func (w *watcher) getLatestVids(pubdAfter time.Time) ([]ytVidInfo, error) {
 		checkTime := time.Now()
 		apiResp, err := apiReq.Do()
 		if err != nil {
+			// Don't hammer on the API if it isn't working or isn't happy.
 			w.ytAPIRespite = 5 * time.Minute
 			return nil, err
 		}
@@ -237,6 +242,7 @@ func (w *watcher) getLatestVids(pubdAfter time.Time) ([]ytVidInfo, error) {
 				return nil, errors.New("non-video in response items")
 			}
 			if !w.show.TitleFilter.MatchString(item.Snippet.Title) {
+				// Not interested in this vid.
 				continue
 			}
 			pubd, err := time.Parse(time.RFC3339, item.Snippet.PublishedAt)
@@ -271,10 +277,10 @@ func (w *watcher) getChannelInfo() error {
 		return errors.New("expected exactly 1 channel in response items")
 	}
 
-	item := apiResp.Items[0]
-	w.show.YTReadableChannelName = item.Snippet.Title
+	ch := apiResp.Items[0]
+	w.show.YTReadableChannelName = ch.Snippet.Title
 
-	thumbURL := item.Snippet.Thumbnails.High.Url
+	thumbURL := ch.Snippet.Thumbnails.High.Url
 	thumbResp, err := http.Get(thumbURL)
 	if err != nil {
 		return err
@@ -284,5 +290,5 @@ func (w *watcher) getChannelInfo() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(w.show.artPath(), buf, 0644)
+	return ioutil.WriteFile(w.show.artPath(), buf, rw_r_r)
 }
