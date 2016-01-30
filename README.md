@@ -31,10 +31,10 @@ flags:
         show version information then exit
 ```
 
-A built-in webserver serves the following files for each podcast.
-* `xml` RSS feed
-* `jpg` artwork
-* `m4a` audio episodes
+A built-in webserver serves the following for each podcast.
+* RSS Feed: `/meta/{configured_short_name}.xml`
+* Artwork: `/meta/{configured_short_name}.jpg`
+* Audio Episodes: `/ep/{yt_video_id}.m4a`
 
 # Building
 
