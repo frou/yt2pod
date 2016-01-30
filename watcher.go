@@ -52,7 +52,7 @@ func (w *watcher) begin() {
 			time.Sleep(w.checkInterval - elapsed)
 		}
 
-		// After the initial check, only vids published since the last check
+		// After the initial check, only vids published after the last check
 		// need be queried for.
 		var pubdAfter time.Time
 		if initialCheck {
@@ -83,6 +83,7 @@ func (w *watcher) begin() {
 		}
 		if len(latestVids) == 0 {
 			// Nothing to do. Go back to sleep.
+			initialCheck = false
 			continue
 		}
 
