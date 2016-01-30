@@ -1,0 +1,28 @@
+{
+    "yt_data_api_key": "OMITTED FROM EXAMPLE CONFIG",
+
+    "audio_format": "m4a",
+    "check_interval_minutes": 30,
+
+    "serve_host": "my-pod-server.example.com",
+    "serve_port": 8120,
+
+    "shows": [
+        {
+            "name": "The Voice of the Report of the Week",
+            "short_name": "vorw",
+
+            "yt_channel_id": "UCeR0n8d3ShTn_yrMhpwyE1Q",
+            "title_filter": "VORW",
+            "epoch": "2015-06-01"
+        },
+        {
+            "name": "MDE Standup",
+            "short_name": "mde_sup",
+
+            "yt_channel_id": "UCuFlctNwFfnzjDC5UzB6fFQ",
+            "title_filter": "stand.?up",
+            "epoch": ""
+        }
+    ]
+}
