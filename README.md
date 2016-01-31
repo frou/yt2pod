@@ -1,10 +1,11 @@
-[yt2pod] is a daemon that monitors YouTube and publishes an audio podcast based
-on a channel's videos.
+[yt2pod] is a daemon that monitors YouTube channels and publishes audio
+podcasts of them.
 
-A podcast episode needn't be created for every video uploaded. They can be
-filtered based on title and upload date. A single instance of yt2pod can
-monitor multiple YouTube channels simultaneously and publish a separate audio
-podcast based on each (and even multiple podcasts based on the same channel).
+A podcast episode needn't be created for every video uploaded to a channel.
+They can be filtered based on title and upload date. A single instance of
+yt2pod can monitor multiple YouTube channels simultaneously and publish a
+separate audio podcast based on each (and even multiple podcasts based on the
+same one).
 
 A built-in webserver serves the following for each podcast.
 * RSS Feed: `/meta/{configured_short_name}.xml`
