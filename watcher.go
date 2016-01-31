@@ -14,6 +14,7 @@ import (
 
 	"google.golang.org/api/youtube/v3"
 
+	"github.com/frou/stdext"
 	"github.com/jbub/podcasts"
 )
 
@@ -208,7 +209,7 @@ func (w *watcher) writeFeed() error {
 		return err
 	}
 	f, err := os.OpenFile(w.show.feedPath(),
-		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, rw_r_r)
+		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, stdext.UserWritableReg)
 	if err != nil {
 		return err
 	}
@@ -295,5 +296,5 @@ func (w *watcher) getChannelInfo() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(w.show.artPath(), buf, rw_r_r)
+	return ioutil.WriteFile(w.show.artPath(), buf, stdext.UserWritableReg)
 }

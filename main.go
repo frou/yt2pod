@@ -25,9 +25,6 @@ const (
 	dataSubdirEpisodes = "ep"
 	dataSubdirMetadata = "meta"
 
-	rwx_rx_rx = 0755
-	rw_r_r    = 0644
-
 	downloadCmdName = "youtube-dl"
 
 	version = "0.9.0"
@@ -141,7 +138,7 @@ func setup() (*config, error) {
 	}
 
 	// Create the data directory.
-	err = os.Mkdir(*dataPath, rwx_rx_rx)
+	err = os.Mkdir(*dataPath, stdext.UserWritableDir)
 	if err != nil && !os.IsExist(err) {
 		return nil, err
 	}
@@ -151,7 +148,7 @@ func setup() (*config, error) {
 	}
 	// Create its subdirectories.
 	for _, name := range []string{dataSubdirMetadata, dataSubdirEpisodes} {
-		err := os.Mkdir(name, rwx_rx_rx)
+		err := os.Mkdir(name, stdext.UserWritableDir)
 		if err != nil && !os.IsExist(err) {
 			return nil, err
 		}
