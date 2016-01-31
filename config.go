@@ -75,8 +75,12 @@ type config struct {
 	Shows                []show `json:"shows"`
 }
 
-func (c *config) urlFor(resource string) string {
-	return fmt.Sprintf("http://%s:%d/%s", c.ServeHost, c.ServePort, resource)
+func (c *config) urlFor(filePath string) string {
+	var portPart string
+	if c.ServePort != 80 {
+		portPart = fmt.Sprintf(":%d", c.ServePort)
+	}
+	return fmt.Sprintf("http://%s%s/%s", c.ServeHost, portPart, filePath)
 }
 
 // ------------------------------------------------------------
