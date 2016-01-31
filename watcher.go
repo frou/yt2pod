@@ -124,14 +124,14 @@ func (w *watcher) begin() {
 }
 
 func (w *watcher) download(vi ytVidInfo) error {
-	diskPath := vi.episodePath()
+	diskPath := vi.episodePath(w.cfg.YTDLWriteExt)
 	if _, err := os.Stat(diskPath); err == nil {
 		// log.Printf("%s: %s already downloaded", w.show, vi.id)
 		return nil
 	}
 
 	cmdLine := fmt.Sprintf("%s -f %s -o %s --socket-timeout 30 -- %s",
-		downloadCmdName, downloadAudioFormat, diskPath, vi.id)
+		downloadCmdName, w.cfg.YTDLFmtSelector, diskPath, vi.id)
 	log.Printf("%s: Running: %s", w.show, cmdLine)
 
 	var errBuf bytes.Buffer
@@ -172,8 +172,9 @@ func (w *watcher) writeFeed() error {
 		Description: feedDesc.String(),
 	}
 	for _, vi := range w.vids {
+		diskPath := vi.episodePath(w.cfg.YTDLWriteExt)
 		var epSize int64
-		f, err := os.Open(vi.episodePath())
+		f, err := os.Open(diskPath)
 		// TODO: Would it be better to omit the enclosure length attribute if
 		// it is not currently known than to give it value 0? The RSS spec says
 		// it is a _required_ attribute, mind.
@@ -184,15 +185,16 @@ func (w *watcher) writeFeed() error {
 			}
 			f.Close()
 		}
+		epURL := w.cfg.urlFor(diskPath)
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,
 			Summary: vi.desc,
-			GUID:    w.cfg.urlFor(vi.episodePath()),
+			GUID:    epURL,
 			PubDate: &podcasts.PubDate{Time: vi.published},
 			Enclosure: &podcasts.Enclosure{
-				URL:    w.cfg.urlFor(vi.episodePath()),
+				URL:    epURL,
 				Length: fmt.Sprint(epSize),
-				Type:   "audio/" + downloadAudioFormat,
+				Type:   "audio/" + w.cfg.YTDLWriteExt,
 			},
 		})
 	}

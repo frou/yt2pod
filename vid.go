@@ -13,7 +13,7 @@ type ytVidInfo struct {
 	desc      string
 }
 
-func (vi *ytVidInfo) episodePath() string {
+func (vi *ytVidInfo) episodePath(fileExt string) string {
 	return filepath.Join(dataSubdirEpisodes,
-		fmt.Sprint(vi.id, ".", downloadAudioFormat))
+		fmt.Sprint(vi.id, ".", fileExt))
 }

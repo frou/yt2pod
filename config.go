@@ -66,7 +66,8 @@ func loadConfig(path string) (c *config, err error) {
 type config struct {
 	YTDataAPIKey         string `json:"yt_data_api_key"`
 	CheckIntervalMinutes int    `json:"check_interval_minutes"`
-	DownloadAudioFormat  string `json:"audio_format"`
+	YTDLFmtSelector      string `json:"ytdl_fmt_selector"`
+	YTDLWriteExt         string `json:"ytdl_write_ext"`
 	ServeHost            string `json:"serve_host"`
 	ServePort            int    `json:"serve_port"`
 	Shows                []show `json:"shows"`

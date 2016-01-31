@@ -22,14 +22,13 @@ import (
 )
 
 const (
-	downloadAudioFormat = "m4a"
-	downloadCmdName     = "youtube-dl"
-
 	dataSubdirEpisodes = "ep"
 	dataSubdirMetadata = "meta"
 
 	rwx_rx_rx = 0755
 	rw_r_r    = 0644
+
+	downloadCmdName = "youtube-dl"
 
 	version = "0.9.0"
 )

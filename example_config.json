@@ -1,8 +1,9 @@
 {
     "yt_data_api_key": "OMITTED FROM EXAMPLE CONFIG",
-
-    "audio_format": "m4a",
     "check_interval_minutes": 30,
+
+    "ytdl_fmt_selector": "140/141",
+    "ytdl_write_ext": "m4a",
 
     "serve_host": "my-pod-server.example.com",
     "serve_port": 8120,
