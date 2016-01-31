@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -28,6 +29,7 @@ func loadConfig(path string) (c *config, err error) {
 	if min := 1; c.CheckIntervalMinutes < min {
 		return nil, fmt.Errorf("check interval must be >= %d minutes", min)
 	}
+	c.YTDLWriteExt = strings.Trim(c.YTDLWriteExt, ".")
 	shortNameSet := make(map[string]struct{})
 	for i := range c.Shows {
 		// Parse Epoch
