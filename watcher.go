@@ -186,9 +186,12 @@ func (w *watcher) writeFeed() error {
 			f.Close()
 		}
 		epURL := w.cfg.urlFor(diskPath)
+		epSummary := fmt.Sprintf(
+			"%s -- Original YouTube video: https://www.youtube.com/watch?v=%s",
+			vi.desc, vi.id)
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,
-			Summary: vi.desc,
+			Summary: epSummary,
 			GUID:    epURL,
 			PubDate: &podcasts.PubDate{Time: vi.published},
 			Enclosure: &podcasts.Enclosure{
