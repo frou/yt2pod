@@ -152,8 +152,7 @@ func (w *watcher) writeFeed() error {
 	// to podcast client users. It's kept shorter when the show has less
 	// configuration.
 	feedDesc := new(bytes.Buffer)
-	fmt.Fprintf(feedDesc,
-		"Generated based on the videos of YouTube channel \"%s\"",
+	fmt.Fprint(feedDesc, "Generated based on the videos of YouTube channel ",
 		w.show.YTReadableChannelName)
 	if !w.show.Epoch.IsZero() {
 		fmt.Fprintf(feedDesc, " published from %s onwards", w.show.EpochStr)

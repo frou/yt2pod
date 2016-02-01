@@ -1,11 +1,11 @@
 {
-    "yt_data_api_key": "OMITTED FROM EXAMPLE CONFIG",
+    "yt_data_api_key": "AIzaSyCE5hIPdIYkYPV9CRxJMjTgMd4NJJw_bvI",
     "check_interval_minutes": 30,
 
     "ytdl_fmt_selector": "140/141",
     "ytdl_write_ext": "m4a",
 
-    "serve_host": "my-pod-server.example.com",
+    "serve_host": "podcasts.example.com",
     "serve_port": 8120,
 
     "shows": [
@@ -15,7 +15,7 @@
 
             "yt_channel_id": "UCeR0n8d3ShTn_yrMhpwyE1Q",
             "title_filter": "VORW",
-            "epoch": "2015-06-01"
+            "epoch": "2015-12-25"
         },
         {
             "name": "MDE Standup",
