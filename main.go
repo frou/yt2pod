@@ -138,7 +138,7 @@ func setup() (*config, error) {
 	}
 
 	// Create the data directory.
-	err = os.Mkdir(*dataPath, stdext.UserWritableDir)
+	err = os.Mkdir(*dataPath, stdext.OwnerWritableDir)
 	if err != nil && !os.IsExist(err) {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func setup() (*config, error) {
 	}
 	// Create its subdirectories.
 	for _, name := range []string{dataSubdirMetadata, dataSubdirEpisodes} {
-		err := os.Mkdir(name, stdext.UserWritableDir)
+		err := os.Mkdir(name, stdext.OwnerWritableDir)
 		if err != nil && !os.IsExist(err) {
 			return nil, err
 		}

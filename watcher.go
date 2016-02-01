@@ -209,7 +209,7 @@ func (w *watcher) writeFeed() error {
 		return err
 	}
 	f, err := os.OpenFile(w.show.feedPath(),
-		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, stdext.UserWritableReg)
+		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, stdext.OwnerWritableReg)
 	if err != nil {
 		return err
 	}
@@ -296,5 +296,5 @@ func (w *watcher) getChannelInfo() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(w.show.artPath(), buf, stdext.UserWritableReg)
+	return ioutil.WriteFile(w.show.artPath(), buf, stdext.OwnerWritableReg)
 }
