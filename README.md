@@ -30,11 +30,8 @@ searching the page source for the first instance of `data-channel-external-id=`
 
 ## YouTube Data API
 
-YouTube's Data API is used to query information. If you do not already have an
-API key, [get one from Google for free][apikey] (ignore the OAuth stuff - a
-basic server key is what's needed).
-
-* `yt_data_api_key` in the config file is where to put your API key
+YouTube's Data API is used to query information. If you want to use [your
+own][apikey] API key, replace the one in the example config.
 
 ## Flags
 
@@ -78,5 +75,5 @@ Copyright (c) 2015 Duncan Holm
 [yt2pod]: https://github.com/frou/yt2pod
 [egcfg]: https://github.com/frou/yt2pod/blob/master/example_config.json
 [ytdl]: https://rg3.github.io/youtube-dl/
-[apikey]: https://developers.google.com/youtube/registering_an_application#create_project
+[apikey]: https://developers.google.com/youtube/registering_an_application
 [go]: https://golang.org/
