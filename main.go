@@ -108,6 +108,7 @@ func setup() (*config, error) {
 	}
 	log.SetOutput(w)
 	log.SetFlags(flags)
+	log.Print(versionLabel)
 
 	// Load config from disk.
 	cfg, err := loadConfig(*configPath)
