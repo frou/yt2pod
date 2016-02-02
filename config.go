@@ -22,15 +22,21 @@ func loadConfig(path string) (c *config, err error) {
 		return nil, err
 	}
 
-	// Do some sanity checks on it.
+	// Do some sanity on the config's values:
+
 	if c.YTDataAPIKey == "" {
 		return nil, errors.New("missing YouTube Data API key")
 	}
 	if min := 1; c.CheckIntervalMinutes < min {
 		return nil, fmt.Errorf("check interval must be >= %d minutes", min)
 	}
-	c.YTDLWriteExt = strings.Trim(c.YTDLWriteExt, ".")
-	shortNameSet := make(map[string]struct{})
+	if len(c.Shows) == 0 {
+		return nil, errors.New("no shows are defined")
+	}
+	// Normalize e.g. ".m4a" and "m4a"
+	c.YTDLWriteExt = strings.TrimLeft(c.YTDLWriteExt, ".")
+
+	showShortNameSet := make(map[string]struct{})
 	for i := range c.Shows {
 		// Parse Epoch
 		var t time.Time
@@ -54,10 +60,10 @@ func loadConfig(path string) (c *config, err error) {
 
 		// Check for show shortname (in effect primary key) collisions.
 		sn := c.Shows[i].ShortName
-		if _, found := shortNameSet[sn]; found {
+		if _, found := showShortNameSet[sn]; found {
 			return nil, fmt.Errorf("multiple shows using shortname \"%s\"", sn)
 		}
-		shortNameSet[sn] = struct{}{}
+		showShortNameSet[sn] = struct{}{}
 	}
 
 	return c, err
