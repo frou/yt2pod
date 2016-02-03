@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/frou/stdext"
 
@@ -44,6 +45,8 @@ var (
 		"show version information then exit")
 
 	versionLabel = fmt.Sprintf("yt2pod v%s", version)
+
+	hitLoggingPeriod = 24 * time.Hour
 )
 
 func main() {
@@ -69,9 +72,10 @@ func main() {
 	}
 
 	// Run a webserver to serve the episode and metadata files.
+	hfs := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod)
 	log.Fatal(http.ListenAndServe(
 		fmt.Sprint(":", cfg.ServePort),
-		http.FileServer(http.Dir("."))))
+		http.FileServer(hfs)))
 }
 
 func setup() (*config, error) {
