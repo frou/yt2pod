@@ -28,7 +28,7 @@ const (
 
 	downloadCmdName = "youtube-dl"
 
-	version = "0.9.2"
+	version = "0.9.3"
 )
 
 var (

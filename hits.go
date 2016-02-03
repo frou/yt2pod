@@ -44,3 +44,5 @@ func (h *hitLoggingFsys) runLoop() {
 		}
 	}
 }
+
+// TODO: Separate the hit counts of /meta/* and /ep/*
