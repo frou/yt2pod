@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"log"
 	"net/http"
 	"os"
@@ -16,6 +18,7 @@ import (
 
 	"github.com/frou/stdext"
 	"github.com/jbub/podcasts"
+	"github.com/nfnt/resize"
 )
 
 type watcher struct {
@@ -283,17 +286,52 @@ func (w *watcher) getChannelInfo() error {
 	}
 
 	ch := apiResp.Items[0]
+
+	// Store the meaningful channel name in addition to the gnarly ID.
 	w.show.YTReadableChannelName = ch.Snippet.Title
 
-	thumbURL := ch.Snippet.Thumbnails.High.Url
-	thumbResp, err := http.Get(thumbURL)
+	// Get the channel image referenced by the thumbnail field.
+	chImgURL := ch.Snippet.Thumbnails.High.Url
+	chImgResp, err := http.Get(chImgURL)
 	if err != nil {
 		return err
 	}
-	defer thumbResp.Body.Close()
-	buf, err := ioutil.ReadAll(thumbResp.Body)
+	defer chImgResp.Body.Close()
+
+	var chImg image.Image
+	switch typ := chImgResp.Header.Get("Content-Type"); typ {
+	case "image/jpeg":
+		chImg, err = jpeg.Decode(chImgResp.Body)
+	case "image/png":
+		chImg, err = png.Decode(chImgResp.Body)
+	default:
+		err = fmt.Errorf("channel image: unexpected type: %s", typ)
+	}
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(w.show.artPath(), buf, stdext.OwnerWritableReg)
+
+	// Ensure that the dimensions of the image meet the minimum requirements to
+	// be listed in the iTunes podcast directory.
+	width, height := chImg.Bounds().Max.X, chImg.Bounds().Max.Y
+	const minDim = 1400
+	if width < minDim || height < minDim {
+		var rw, rh uint
+		// The smaller dim must meet the minimum. Other than that, keep aspect.
+		if height < width {
+			rw, rh = 0, minDim
+		} else {
+			rw, rh = minDim, 0
+		}
+		chImg = resize.Resize(rw, rh, chImg, resize.Bicubic)
+	}
+
+	// Write the image to disk.
+	f, err := os.OpenFile(w.show.artPath(),
+		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, stdext.OwnerWritableReg)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return jpeg.Encode(f, chImg, nil)
 }
