@@ -204,12 +204,16 @@ func (w *watcher) writeFeed() error {
 			},
 		})
 	}
-
-	applyImg := podcasts.Image(w.cfg.urlFor(w.show.artPath()))
-	feed, err := feedBuilder.Feed(applyImg)
+	feed, err := feedBuilder.Feed(
+		// Apply iTunes-specific XML elements.
+		podcasts.Author(feedBuilder.Copyright),
+		podcasts.Summary(feedBuilder.Description),
+		podcasts.Image(w.cfg.urlFor(w.show.artPath())))
 	if err != nil {
 		return err
 	}
+
+	// Write the feed XML to disk.
 	f, err := os.OpenFile(w.show.feedPath(),
 		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, stdext.OwnerWritableReg)
 	if err != nil {
