@@ -3,13 +3,14 @@ package main
 import (
 	"log"
 	"net/http"
+	"path"
 	"time"
 )
 
 // Wrap a http.FileSystem to log how many hits it gets every given period.
 type hitLoggingFsys struct {
 	fsImpl       http.FileSystem
-	hitc         chan struct{}
+	hitc         chan string
 	period       time.Duration
 	periodTicker *time.Ticker
 }
@@ -19,7 +20,7 @@ func newHitLoggingFsys(
 
 	h := hitLoggingFsys{
 		fsImpl: fsImpl,
-		hitc:   make(chan struct{}),
+		hitc:   make(chan string),
 		period: period,
 	}
 	h.periodTicker = time.NewTicker(h.period)
@@ -28,21 +29,19 @@ func newHitLoggingFsys(
 }
 
 func (h *hitLoggingFsys) Open(name string) (http.File, error) {
-	h.hitc <- struct{}{}
+	h.hitc <- name
 	return h.fsImpl.Open(name)
 }
 
 func (h *hitLoggingFsys) runLoop() {
-	var n int
+	hits := make(map[string]uint) // resource "directory" -> hit count
 	for {
 		select {
+		case resource := <-h.hitc:
+			hits[path.Dir(resource)]++
 		case <-h.periodTicker.C:
-			log.Printf("Hits in last %v period: %d", h.period, n)
-			n = 0
-		case <-h.hitc:
-			n++
+			log.Printf("Hits in last %v period by dir: %v", h.period, hits)
+			hits = make(map[string]uint)
 		}
 	}
 }
-
-// TODO: Separate the hit counts of /meta/* and /ep/*
