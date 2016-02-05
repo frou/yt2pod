@@ -16,22 +16,26 @@ A built-in webserver serves the following for each podcast.
 
 # Configuration
 
-Main configuration is done using a [JSON file][egcfg].
+Main configuration is done using [a JSON file][egcfg].
 For each podcast ("show"):
 
 * `title_filter` is a regexp (always case-insensitive)
 
 * `epoch` is a date (YYYY-MM-DD or blank to mean from-the-beginning)
 
-* `yt_channel_id` is a ~24 character string identifying the YouTube channel
-(different from its readable username). When at a channel's page in your web
-browser, if the ID is not shown as part of the URL, you can still find it by
-searching the page source for the first instance of `data-channel-external-id=`
+* `yt_channel_id` is the 24 character string (starting "UC") that identifies
+the YouTube channel. When at the channel's page in your browser, its ID may
+be shown as part of the URL (It can always be found by searching the page
+source for the first instance of `data-channel-external-id=`)
+
+    * As a fallback, you can place the channel's username in the
+     `yt_channel_id` field. Not all channels on modern YouTube have a username,
+     but for ones that do, it's typically easier to find than their ID.
 
 ## YouTube Data API
 
 YouTube's Data API is used to query information. If you want to use [your
-own][apikey] API key, replace the one in the example config.
+own][apikey] API key, replace the one in the example config file.
 
 ## Flags
 

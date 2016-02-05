@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
@@ -277,21 +278,36 @@ func (w *watcher) getLatestVids(pubdAfter time.Time) ([]ytVidInfo, error) {
 	return latestVids, nil
 }
 
+var ytChannelIDFormat = regexp.MustCompile("UC[[:alnum:]_-]{22}")
+
 func (w *watcher) getChannelInfo() error {
-	apiReq := w.ytAPI.Channels.List("snippet").
-		Id(w.show.YTChannelID).
-		MaxResults(1)
+	apiReq := w.ytAPI.Channels.List("snippet").MaxResults(1)
+	if ytChannelIDFormat.MatchString(w.show.YTChannelID) {
+		apiReq = apiReq.Id(w.show.YTChannelID)
+	} else {
+		// A username was placed in the Channel ID field in the config file.
+		// The actual Channel ID will be recovered from the response to this
+		// first API request.
+		apiReq = apiReq.ForUsername(w.show.YTChannelID)
+	}
 	apiResp, err := apiReq.Do()
 	if err != nil {
 		return err
 	}
-	if len(apiResp.Items) != 1 || apiResp.Items[0].Kind != "youtube#channel" {
+	switch len(apiResp.Items) {
+	case 0:
+		return errors.New("not a channel id: " + w.show.YTChannelID)
+	case 1:
+		if apiResp.Items[0].Kind == "youtube#channel" {
+			break
+		}
+		fallthrough
+	default:
 		return errors.New("expected exactly 1 channel in response items")
 	}
 
 	ch := apiResp.Items[0]
-
-	// Store the meaningful channel name in addition to the gnarly ID.
+	w.show.YTChannelID = ch.Id
 	w.show.YTReadableChannelName = ch.Snippet.Title
 
 	// Get the channel image referenced by the thumbnail field.
