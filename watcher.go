@@ -96,8 +96,8 @@ func (w *watcher) begin() {
 		log.Printf("%s: %d vids of interest published (making %d in total)",
 			w.show, len(latestVids), len(w.vids))
 		for _, vi := range latestVids {
-			if err := w.download(vi); err != nil {
-				log.Printf("%s: Download failed: %v", w.show, err)
+			if err := w.download(vi, true); err != nil {
+				log.Printf("%s: %s download failed: %v", w.show, vi.id, err)
 				problemVids[vi.id] = vi
 			}
 		}
@@ -108,7 +108,7 @@ func (w *watcher) begin() {
 			log.Printf("%s: There are %d problem vids", w.show, n)
 		}
 		for _, vi := range problemVids {
-			err := w.download(vi)
+			err := w.download(vi, false)
 			if err == nil {
 				delete(problemVids, vi.id)
 				log.Printf("%s: Resolved problem vid %s", w.show, vi.id)
@@ -128,16 +128,17 @@ func (w *watcher) begin() {
 	}
 }
 
-func (w *watcher) download(vi ytVidInfo) error {
+func (w *watcher) download(vi ytVidInfo, firstTry bool) error {
 	diskPath := vi.episodePath(w.cfg.YTDLWriteExt)
 	if _, err := os.Stat(diskPath); err == nil {
-		// log.Printf("%s: %s already downloaded", w.show, vi.id)
 		return nil
 	}
 
 	cmdLine := fmt.Sprintf("%s -f %s -o %s --socket-timeout 30 -- %s",
 		downloadCmdName, w.cfg.YTDLFmtSelector, diskPath, vi.id)
-	log.Printf("%s: Running: %s", w.show, cmdLine)
+	if firstTry {
+		log.Printf("%s: Download intent: %s", w.show, cmdLine)
+	}
 
 	var errBuf bytes.Buffer
 	cmdLineSplit := strings.Split(cmdLine, " ")
