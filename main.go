@@ -41,11 +41,16 @@ var (
 	dataPath = flag.String("data", "data",
 		"path to directory to change into and write data (created if needed)")
 
+	performClean = flag.Bool("clean", false,
+		"Remove files in the data directory now irrelevant based on config")
+
 	showVersion = flag.Bool("version", false,
 		"show version information then exit")
 
 	versionLabel = fmt.Sprintf("yt2pod v%s", version)
+)
 
+const (
 	hitLoggingPeriod = 24 * time.Hour
 )
 
@@ -57,6 +62,12 @@ func main() {
 
 	apiKey := cfg.YTDataAPIKey
 	log.Printf("Using YouTube Data API key ending %s", apiKey[len(apiKey)-5:])
+
+	var cleanc chan *cleaningWhitelist
+	if *performClean {
+		cleanc = make(chan *cleaningWhitelist)
+	}
+
 	for i := range cfg.Shows {
 		ytAPI, err := youtube.New(&http.Client{
 			Transport: &transport.APIKey{Key: apiKey},
@@ -64,11 +75,19 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		wat, err := newWatcher(ytAPI, cfg, &cfg.Shows[i])
+		wat, err := newWatcher(ytAPI, cfg, &cfg.Shows[i], cleanc)
 		if err != nil {
 			log.Fatal(err)
 		}
-		go wat.begin()
+		go wat.watch()
+	}
+
+	if *performClean {
+		n, err := clean(len(cfg.Shows), cleanc)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Clean removed %d files", n)
 	}
 
 	// Run a webserver to serve the episode and metadata files.

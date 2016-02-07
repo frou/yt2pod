@@ -31,16 +31,19 @@ type watcher struct {
 	lastChecked  time.Time
 	ytAPIRespite time.Duration
 	vids         []ytVidInfo
+
+	cleanc chan *cleaningWhitelist
 }
 
-func newWatcher(
-	ytAPI *youtube.Service, cfg *config, show *show) (*watcher, error) {
+func newWatcher(ytAPI *youtube.Service, cfg *config, show *show,
+	cleanc chan *cleaningWhitelist) (*watcher, error) {
 
 	w := watcher{
 		ytAPI:         ytAPI,
 		cfg:           cfg,
 		show:          show,
 		checkInterval: time.Duration(cfg.CheckIntervalMinutes) * time.Minute,
+		cleanc:        cleanc,
 	}
 	// Up front, check that the YouTube API is working. Do this by fetching the
 	// name of the channel and its 'avatar' image (both made use of later).
@@ -48,7 +51,7 @@ func newWatcher(
 	return &w, err
 }
 
-func (w *watcher) begin() {
+func (w *watcher) watch() {
 	initialCheck, problemVids := true, make(map[string]ytVidInfo)
 	for {
 		// Sleep until it's time for a check.
@@ -75,6 +78,7 @@ func (w *watcher) begin() {
 			pubdAfter = w.lastChecked
 		}
 
+		// Do the check.
 		latestVids, err := w.getLatestVids(pubdAfter)
 		if err != nil {
 			log.Printf("%s: Getting latest vids failed: %v", w.show, err)
@@ -86,13 +90,18 @@ func (w *watcher) begin() {
 			}
 			continue
 		}
+		w.vids = append(w.vids, latestVids...)
+
+		if *performClean && initialCheck {
+			w.sendCleaningWhitelist()
+		}
+
 		if len(latestVids) == 0 {
 			initialCheck = false
 			// Nothing to do. Go back to sleep.
 			continue
 		}
 
-		w.vids = append(w.vids, latestVids...)
 		log.Printf("%s: %d vids of interest published (making %d in total)",
 			w.show, len(latestVids), len(w.vids))
 		for _, vi := range latestVids {
