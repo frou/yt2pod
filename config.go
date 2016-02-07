@@ -92,8 +92,9 @@ func (c *config) urlFor(filePath string) string {
 // ------------------------------------------------------------
 
 type show struct {
-	YTChannelID           string `json:"yt_channel_id"`
-	YTReadableChannelName string
+	YTChannel             string `json:"yt_channel"`
+	YTChannelID           string
+	YTChannelReadableName string
 
 	Name      string `json:"name"`
 	ShortName string `json:"short_name"`

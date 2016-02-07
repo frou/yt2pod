@@ -158,7 +158,7 @@ func (w *watcher) writeFeed() error {
 	// configuration.
 	feedDesc := new(bytes.Buffer)
 	fmt.Fprint(feedDesc, "Generated based on the videos of YouTube channel ",
-		w.show.YTReadableChannelName)
+		w.show.YTChannelReadableName)
 	if !w.show.Epoch.IsZero() {
 		fmt.Fprintf(feedDesc, " published from %s onwards", w.show.EpochStr)
 	}
@@ -172,7 +172,7 @@ func (w *watcher) writeFeed() error {
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.show.Name,
 		Link:        "https://www.youtube.com/channel/" + w.show.YTChannelID,
-		Copyright:   w.show.YTReadableChannelName,
+		Copyright:   w.show.YTChannelReadableName,
 		Language:    "en",
 		Description: feedDesc.String(),
 	}
@@ -282,19 +282,19 @@ func (w *watcher) getLatestVids(pubdAfter time.Time) ([]ytVidInfo, error) {
 var ytChannelIDFormat = regexp.MustCompile("UC[[:alnum:]_-]{22}")
 
 func (w *watcher) getChannelInfo() error {
-	apiReq := w.ytAPI.Channels.List("snippet").MaxResults(1)
-	if ytChannelIDFormat.MatchString(w.show.YTChannelID) {
-		apiReq = apiReq.Id(w.show.YTChannelID)
+	apiReq := w.ytAPI.Channels.List("id,snippet").MaxResults(1)
+	// Work out whether yt_channel specified in config is an ID or Username and
+	// modify the API request accordingly.
+	if ytChannelIDFormat.MatchString(w.show.YTChannel) {
+		apiReq = apiReq.Id(w.show.YTChannel)
 	} else {
-		// A username was placed in the Channel ID field in the config file.
-		// The actual Channel ID will be recovered from the response to this
-		// first API request.
-		apiReq = apiReq.ForUsername(w.show.YTChannelID)
+		apiReq = apiReq.ForUsername(w.show.YTChannel)
 	}
 	apiResp, err := apiReq.Do()
 	if err != nil {
 		return err
 	}
+
 	switch len(apiResp.Items) {
 	case 0:
 		return errors.New("not a channel id: " + w.show.YTChannelID)
@@ -306,10 +306,11 @@ func (w *watcher) getChannelInfo() error {
 	default:
 		return errors.New("expected exactly 1 channel in response items")
 	}
-
 	ch := apiResp.Items[0]
+
+	// We now know the channel's ID regardless of whether it was in config.
 	w.show.YTChannelID = ch.Id
-	w.show.YTReadableChannelName = ch.Snippet.Title
+	w.show.YTChannelReadableName = ch.Snippet.Title
 
 	// Get the channel image referenced by the thumbnail field.
 	chImgURL := ch.Snippet.Thumbnails.High.Url

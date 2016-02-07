@@ -13,7 +13,7 @@
             "name": "VORW: The Voice of TheReportOfTheWeek",
             "short_name": "vorw",
 
-            "yt_channel_id": "UCeR0n8d3ShTn_yrMhpwyE1Q",
+            "yt_channel": "UCeR0n8d3ShTn_yrMhpwyE1Q",
             "title_filter": "VORW",
             "epoch": "2015-12-25"
         },
@@ -21,7 +21,7 @@
             "name": "MDE Standup",
             "short_name": "mde_sup",
 
-            "yt_channel_id": "UCuFlctNwFfnzjDC5UzB6fFQ",
+            "yt_channel": "MillionDollarExtreme",
             "title_filter": "stand.?up",
             "epoch": ""
         }

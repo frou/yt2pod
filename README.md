@@ -17,20 +17,22 @@ A built-in webserver serves the following for each podcast.
 # Configuration
 
 Main configuration is done using [a JSON file][egcfg].
+
 For each podcast ("show"):
 
-* `title_filter` is a regexp (always case-insensitive)
+* `yt_channel` is either the YouTube channel's Username or its ID (a
+24-character string starting "UC").
 
-* `epoch` is a date (YYYY-MM-DD or blank to mean from-the-beginning)
+    * Note that on modern YouTube, not every channel has a Username. Go to the
+      channel's page using your web browser and look at the URL and you will
+      find either one or the other.
 
-* `yt_channel_id` is the 24 character string (starting "UC") that identifies
-the YouTube channel. When at the channel's page in your browser, its ID may
-be shown as part of the URL (It can always be found by searching the page
-source for the first instance of `data-channel-external-id=`)
+* `epoch` is a date (YYYY-MM-DD or an empty string to mean from-the-beginning).
+Videos uploaded before the epoch are ignored.
 
-    * As a fallback, you can place the channel's username in the
-     `yt_channel_id` field. Not all channels on modern YouTube have a username,
-     but for ones that do, it's typically easier to find than their ID.
+* `title_filter` is a regular expression. Videos uploaded on or after the
+epoch, and with a title matching this filter, have a podcast episode created
+for them.
 
 ## YouTube Data API
 
