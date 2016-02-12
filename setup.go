@@ -74,7 +74,7 @@ func setup() (*config, error) {
 	if err != nil {
 		if urlErr, ok := err.(*url.Error); ok {
 			if sysRootsErr, ok := urlErr.Err.(x509.SystemRootsError); ok {
-				log.Fatal(sysRootsErr)
+				return nil, sysRootsErr
 			}
 		}
 		log.Print(err)
