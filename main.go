@@ -44,6 +44,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	err = run(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run(cfg *config) error {
 	apiKey := cfg.YTDataAPIKey
 	log.Printf("Using YouTube Data API key ending %s", apiKey[len(apiKey)-5:])
 	for i := range cfg.Shows {
@@ -51,11 +58,11 @@ func main() {
 			Transport: &transport.APIKey{Key: apiKey},
 		})
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		wat, err := newWatcher(ytAPI, cfg, &cfg.Shows[i])
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		go wat.begin()
 	}
@@ -68,5 +75,5 @@ func main() {
 		// Conserve # open FDs by pruning persistent (keep-alive) HTTP conns.
 		ReadTimeout: 15 * time.Second,
 	}
-	log.Fatal(websrv.ListenAndServe())
+	return websrv.ListenAndServe()
 }
