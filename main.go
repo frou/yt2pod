@@ -72,10 +72,14 @@ func main() {
 	}
 
 	// Run a webserver to serve the episode and metadata files.
-	hfs := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod)
-	log.Fatal(http.ListenAndServe(
-		fmt.Sprint(":", cfg.ServePort),
-		http.FileServer(hfs)))
+	files := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod)
+	websrv := http.Server{
+		Addr:    fmt.Sprint(":", cfg.ServePort),
+		Handler: http.FileServer(files),
+		// Conserve # open FDs by pruning persistent (keep-alive) HTTP conns.
+		ReadTimeout: 15 * time.Second,
+	}
+	log.Fatal(websrv.ListenAndServe())
 }
 
 func setup() (*config, error) {
