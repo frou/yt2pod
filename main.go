@@ -31,7 +31,7 @@ var (
 		"path to directory to change into and write data (created if needed)")
 
 	performClean = flag.Bool("clean", false,
-		"Remove files in the data directory now irrelevant based on config")
+		"during initialisation, remove files in the data directory that are irrelevant given the current config")
 
 	showVersion = flag.Bool("version", false,
 		"show version information then exit")
