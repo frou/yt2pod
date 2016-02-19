@@ -51,13 +51,15 @@ usage:
 
 flags:
   -config string
-        path to config file (default "config.json")
+      path to config file (default "config.json")
   -data string
-        path to directory to change into and write data (created if needed) (default "data")
+      path to directory to change into and write data (created if needed) (default "data")
+  -dataclean
+      during initialisation, remove files in the data directory that are irrelevant given the current config
   -syslog
-        send log statements to syslog rather than writing them to stderr
+      send log statements to syslog rather than writing them to stderr
   -version
-        show version information then exit
+      show version information then exit
 ```
 
 
@@ -97,6 +99,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
 
 [yt2pod]: https://github.com/frou/yt2pod
 [egcfg]: https://github.com/frou/yt2pod/blob/master/example_config.json

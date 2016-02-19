@@ -92,7 +92,7 @@ func (w *watcher) watch() {
 		}
 		w.vids = append(w.vids, latestVids...)
 
-		if *performClean && initialCheck {
+		if *dataClean && initialCheck {
 			w.sendCleaningWhitelist()
 		}
 

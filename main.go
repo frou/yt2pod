@@ -30,7 +30,7 @@ var (
 	dataPath = flag.String("data", "data",
 		"path to directory to change into and write data (created if needed)")
 
-	performClean = flag.Bool("clean", false,
+	dataClean = flag.Bool("dataclean", false,
 		"during initialisation, remove files in the data directory that are irrelevant given the current config")
 
 	showVersion = flag.Bool("version", false,
@@ -60,7 +60,7 @@ func run(cfg *config) error {
 	log.Printf("Using YouTube Data API key ending %s", apiKey[len(apiKey)-5:])
 
 	var cleanc chan *cleaningWhitelist
-	if *performClean {
+	if *dataClean {
 		cleanc = make(chan *cleaningWhitelist)
 	}
 
@@ -78,7 +78,7 @@ func run(cfg *config) error {
 		go wat.watch()
 	}
 
-	if *performClean {
+	if *dataClean {
 		n, err := clean(len(cfg.Shows), cleanc)
 		if err != nil {
 			return err
