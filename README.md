@@ -76,6 +76,8 @@ good package managers).
 
 ---
 
+# License
+
 ```text
 The MIT License
 
