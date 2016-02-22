@@ -30,9 +30,8 @@ For each podcast ("show"):
 * `epoch` is a date (YYYY-MM-DD or an empty string to mean from-the-beginning).
 Videos uploaded before the epoch are ignored.
 
-* `title_filter` is a regular expression. Videos uploaded on or after the
-epoch, and with a title matching this filter, have a podcast episode created
-for them.
+* `title_filter` is a regular expression. Videos with a title matching it have
+a podcast episode created for them. Use an empty string if you want them all.
 
 ## YouTube Data API
 
