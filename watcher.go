@@ -28,11 +28,13 @@ type watcher struct {
 	show          *show
 	checkInterval time.Duration
 
+	initialCheck bool
 	lastChecked  time.Time
 	ytAPIRespite time.Duration
 	vids         []ytVidInfo
 
-	cleanc chan *cleaningWhitelist
+	problemVids map[string]ytVidInfo
+	cleanc      chan *cleaningWhitelist
 }
 
 func newWatcher(ytAPI *youtube.Service, cfg *config, show *show,
@@ -43,7 +45,10 @@ func newWatcher(ytAPI *youtube.Service, cfg *config, show *show,
 		cfg:           cfg,
 		show:          show,
 		checkInterval: time.Duration(cfg.CheckIntervalMinutes) * time.Minute,
-		cleanc:        cleanc,
+
+		initialCheck: true,
+		problemVids:  make(map[string]ytVidInfo),
+		cleanc:       cleanc,
 	}
 	// Up front, check that the YouTube API is working. Do this by fetching the
 	// name of the channel and its 'avatar' image (both made use of later).
@@ -52,7 +57,6 @@ func newWatcher(ytAPI *youtube.Service, cfg *config, show *show,
 }
 
 func (w *watcher) watch() {
-	initialCheck, problemVids := true, make(map[string]ytVidInfo)
 	for {
 		// Sleep until it's time for a check.
 		elapsed := time.Since(w.lastChecked)
@@ -63,7 +67,7 @@ func (w *watcher) watch() {
 		// The initial check does a full query for vids. Subsequent checks need
 		// only query vids published after the last check.
 		var pubdAfter time.Time
-		if initialCheck {
+		if w.initialCheck {
 			pubdAfter = w.show.Epoch
 			if !w.show.Epoch.IsZero() {
 				log.Printf("%s: Epoch is configured as %s",
@@ -79,7 +83,7 @@ func (w *watcher) watch() {
 		}
 
 		// Do the check.
-		latestVids, err := w.getLatestVids(pubdAfter)
+		latestVids, err := w.getLatest(pubdAfter)
 		if err != nil {
 			log.Printf("%s: Getting latest vids failed: %v", w.show, err)
 			if w.ytAPIRespite > 0 {
@@ -90,50 +94,59 @@ func (w *watcher) watch() {
 			}
 			continue
 		}
-		w.vids = append(w.vids, latestVids...)
 
-		if *dataClean && initialCheck {
-			w.sendCleaningWhitelist()
+		if *dataClean && w.initialCheck {
+			w.sendCleaningWhitelist(latestVids)
 		}
 
-		if len(latestVids) == 0 {
-			initialCheck = false
-			// Nothing to do. Go back to sleep.
-			continue
-		}
+		w.processLatest(latestVids)
+		w.initialCheck = false
+	}
+}
 
-		log.Printf("%s: %d vids of interest published (making %d in total)",
+func (w *watcher) processLatest(latestVids []ytVidInfo) {
+	w.vids = append(w.vids, latestVids...)
+
+	areNewVids := len(latestVids) > 0
+	if areNewVids {
+		log.Printf("%s: %d new vids of interest published (makes %d in total)",
 			w.show, len(latestVids), len(w.vids))
-		for _, vi := range latestVids {
-			if err := w.download(vi, true); err != nil {
-				log.Printf("%s: %s download failed: %v", w.show, vi.id, err)
-				problemVids[vi.id] = vi
-			}
+	}
+	var areNewProblems, problemResolved bool
+	for _, vi := range latestVids {
+		if err := w.download(vi, true); err != nil {
+			log.Printf("%s: %s download failed: %v", w.show, vi.id, err)
+			w.problemVids[vi.id] = vi
+			areNewProblems = true
 		}
+	}
 
-		// Try and resolve vids that had download problems during this (and
-		// previous) checks.
-		if n := len(problemVids); n > 0 {
-			log.Printf("%s: There are %d problem vids", w.show, n)
+	// Try and resolve vids that had download problems during this (and
+	// previous) checks.
+	if areNewProblems {
+		log.Printf("%s: There are now %d problem vids",
+			w.show, len(w.problemVids))
+	}
+	for _, vi := range w.problemVids {
+		err := w.download(vi, false)
+		if err == nil {
+			delete(w.problemVids, vi.id)
+			problemResolved = true
+			log.Printf("%s: Resolved problem vid %s", w.show, vi.id)
 		}
-		for _, vi := range problemVids {
-			err := w.download(vi, false)
-			if err == nil {
-				delete(problemVids, vi.id)
-				log.Printf("%s: Resolved problem vid %s", w.show, vi.id)
-			}
-		}
+	}
 
-		// Write the podcast feed XML to disk.
+	// Write the podcast feed XML to disk.
+	if areNewVids || problemResolved {
 		if err := w.writeFeed(); err != nil {
 			log.Printf("%s: Writing feed failed: %v", w.show, err)
 		}
-		if initialCheck {
-			// This is helpful to appear in the log (but only once per show).
-			log.Printf("%s: URL for feed is configured as %s",
-				w.show, w.cfg.urlFor(w.show.feedPath()))
-		}
-		initialCheck = false
+	}
+
+	if w.initialCheck {
+		// This is helpful to appear in the log (but only once per show).
+		log.Printf("%s: URL for feed is configured as %s",
+			w.show, w.cfg.urlFor(w.show.feedPath()))
 	}
 }
 
@@ -239,7 +252,7 @@ func (w *watcher) writeFeed() error {
 	return nil
 }
 
-func (w *watcher) getLatestVids(pubdAfter time.Time) ([]ytVidInfo, error) {
+func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 	var (
 		latestVids    []ytVidInfo
 		nextPageToken string

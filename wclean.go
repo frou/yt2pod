@@ -54,12 +54,12 @@ type cleaningWhitelist struct {
 
 // ------------------------------------------------------------
 
-// To the goroutine cleaning out the data directory, send a whitelist that
-// prevents files on disk that remain relevant to this watcher from being
-// removed.
-func (w *watcher) sendCleaningWhitelist() {
+// To the goroutine cleaning out the data directory, send a whitelist
+// containing the paths of files on disk that remain relevant to this watcher,
+// so that they will not be removed.
+func (w *watcher) sendCleaningWhitelist(vids []ytVidInfo) {
 	wlist := cleaningWhitelist{cleanFinishedC: make(chan struct{})}
-	for _, vi := range w.vids {
+	for _, vi := range vids {
 		wlist.paths = append(wlist.paths,
 			vi.episodePath(w.cfg.YTDLWriteExt))
 	}
