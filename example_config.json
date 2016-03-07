@@ -5,7 +5,7 @@
     "ytdl_fmt_selector": "140/141",
     "ytdl_write_ext": "m4a",
 
-    "serve_host": "podcasts.example.com",
+    "serve_host": "localhost",
     "serve_port": 8120,
 
     "shows": [

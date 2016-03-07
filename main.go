@@ -89,7 +89,7 @@ func run(cfg *config) error {
 	// Run a webserver to serve the episode and metadata files.
 	files := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod)
 	websrv := http.Server{
-		Addr:    fmt.Sprint(":", cfg.ServePort),
+		Addr:    fmt.Sprint(cfg.ServeHost, ":", cfg.ServePort),
 		Handler: http.FileServer(files),
 		// Conserve # open FDs by pruning persistent (keep-alive) HTTP conns.
 		ReadTimeout: 15 * time.Second,
