@@ -106,6 +106,7 @@ func (w *watcher) watch() {
 
 func (w *watcher) processLatest(latestVids []ytVidInfo) {
 	w.vids = append(w.vids, latestVids...)
+	// TODO: Implement sorting for type ytVidInfo and sort by pub date descending.
 
 	areNewVids := len(latestVids) > 0
 	if areNewVids {
@@ -188,7 +189,7 @@ func (w *watcher) writeFeed() error {
 		fmt.Fprintf(feedDesc, " with titles matching \"%s\"",
 			w.show.TitleFilterStr)
 	}
-	fmt.Fprintf(feedDesc, " [%s]", versionLabel)
+	fmt.Fprintf(feedDesc, " // %s", versionLabel)
 
 	// Use the podcasts package to construct the XML for the file.
 	feedBuilder := &podcasts.Podcast{
@@ -214,7 +215,7 @@ func (w *watcher) writeFeed() error {
 		}
 		epURL := w.cfg.urlFor(diskPath)
 		epSummary := fmt.Sprintf(
-			"%s [Original YouTube video: https://www.youtube.com/watch?v=%s ]",
+			"%s // Original YouTube video: https://www.youtube.com/watch?v=%s",
 			vi.desc, vi.id)
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,
