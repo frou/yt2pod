@@ -89,7 +89,11 @@ func run(cfg *config) error {
 	// Run a webserver to serve the episode and metadata files.
 	files := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod)
 	websrv := http.Server{
-		Addr:    fmt.Sprint(cfg.ServeHost, ":", cfg.ServePort),
+		// TODO: Need a distinction between the host/domain used for http links
+		// in the feed and the one used to bind here, because the machine
+		// ultimately doing the serving might not itself have the public IP the
+		// domain resolves to.
+		Addr:    fmt.Sprint(/*cfg.ServeHost,*/":", cfg.ServePort),
 		Handler: http.FileServer(files),
 		// Conserve # open FDs by pruning persistent (keep-alive) HTTP conns.
 		ReadTimeout: 15 * time.Second,
