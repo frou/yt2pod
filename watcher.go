@@ -112,7 +112,7 @@ func (w *watcher) processLatest(latestVids []ytVidInfo) {
 
 	areNewVids := len(latestVids) > 0
 	if areNewVids {
-		log.Printf("%s: %d new vids of interest published (makes %d in total)",
+		log.Printf("%s: %d vids of interest published (makes %d in total)",
 			w.show, len(latestVids), len(w.vids))
 	}
 	var areNewProblems, problemResolved bool
