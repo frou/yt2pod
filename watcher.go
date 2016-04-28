@@ -201,18 +201,18 @@ func (w *watcher) writeFeed() error {
 	}
 	for _, vi := range w.vids {
 		diskPath := vi.episodePath(w.cfg.YTDLWriteExt)
-		var epSize int64
 		f, err := os.Open(diskPath)
-		// TODO: Would it be better to omit the enclosure length attribute if
-		// it is not currently known than to give it value 0? The RSS spec says
-		// it is a _required_ attribute, mind.
-		if err == nil {
-			info, err := f.Stat()
-			if err == nil {
-				epSize = info.Size()
-			}
-			f.Close()
+		if err != nil {
+			log.Print(err)
+			continue
 		}
+		info, err := f.Stat()
+		f.Close()
+		if err != nil {
+			log.Print(err)
+			continue
+		}
+		epSize := info.Size()
 		epURL := w.cfg.urlFor(diskPath)
 		epSummary := fmt.Sprintf(
 			"%s // Original YouTube video: https://www.youtube.com/watch?v=%s",
