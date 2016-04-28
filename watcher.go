@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -106,7 +107,8 @@ func (w *watcher) watch() {
 
 func (w *watcher) processLatest(latestVids []ytVidInfo) {
 	w.vids = append(w.vids, latestVids...)
-	// TODO: Implement sorting for type ytVidInfo and sort by pub date descending.
+	// Maintain reverse chronological ordering of the vids (newest first).
+	sort.Sort(sort.Reverse(vidsChronoSorter(w.vids)))
 
 	areNewVids := len(latestVids) > 0
 	if areNewVids {
