@@ -271,8 +271,8 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 		checkTime := time.Now()
 		apiResp, err := apiReq.Do()
 		if err != nil {
-			// Don't hammer on the API if it isn't working or isn't happy.
-			w.ytAPIRespite = 5 * time.Minute
+			// Don't hammer on the API if it's down or isn't happy.
+			w.ytAPIRespite = ytAPIRespiteUnit
 			return nil, err
 		}
 		w.lastChecked = checkTime

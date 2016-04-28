@@ -18,6 +18,10 @@ const (
 	downloadCmdName = "youtube-dl"
 
 	version = "0.9.9"
+
+	hitLoggingPeriod       = 24 * time.Hour
+	websrvClientReadTimout = 15 * time.Second
+	ytAPIRespiteUnit       = 5 * time.Minute
 )
 
 var (
@@ -37,10 +41,6 @@ var (
 		"show version information then exit")
 
 	versionLabel = fmt.Sprintf("yt2pod v%s", version)
-)
-
-const (
-	hitLoggingPeriod = 24 * time.Hour
 )
 
 func main() {
@@ -92,7 +92,7 @@ func run(cfg *config) error {
 		Addr:    fmt.Sprint(cfg.ServeHost, ":", cfg.ServePort),
 		Handler: http.FileServer(files),
 		// Conserve # open FDs by pruning persistent (keep-alive) HTTP conns.
-		ReadTimeout: 15 * time.Second,
+		ReadTimeout: websrvClientReadTimout,
 	}
 	err := websrv.ListenAndServe()
 	if err != nil {
