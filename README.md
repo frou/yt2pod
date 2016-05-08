@@ -2,10 +2,11 @@
 podcasts of them.
 
 A podcast episode needn't be created for every video uploaded to a channel.
-They can be filtered based on title and upload date. A single instance of
-yt2pod can monitor multiple YouTube channels simultaneously and publish a
-separate audio podcast based on each (and even multiple podcasts based on the
-same one).
+They can be filtered based on title and upload date.
+
+A single instance of yt2pod can monitor multiple YouTube channels
+simultaneously and publish a separate audio podcast based on each (and even
+multiple podcasts based on the same channel).
 
 A built-in webserver serves the following for each podcast.
 * RSS Feed: `/meta/{configured_short_name}.xml`
@@ -61,14 +62,13 @@ flags:
       show version information then exit
 ```
 
-
-# Building & Running
+# Building & Dependencies
 
 With [Go] installed (available in all good package managers):
 
 `$ go get github.com/frou/yt2pod`
 
-The `yt2pod` binary should now be built and located in `$GOPATH/bin/`
+The `yt2pod` binary should now be built and located in `$GOPATH/bin`
 
 The only runtime depenency is the [youtube-dl command][ytdl] (available in all
 good package managers).
