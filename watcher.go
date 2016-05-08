@@ -107,8 +107,6 @@ func (w *watcher) watch() {
 
 func (w *watcher) processLatest(latestVids []ytVidInfo) {
 	w.vids = append(w.vids, latestVids...)
-	// Maintain reverse chronological ordering of the vids (newest first).
-	sort.Sort(sort.Reverse(vidsChronoSorter(w.vids)))
 
 	areNewVids := len(latestVids) > 0
 	if areNewVids {
@@ -201,6 +199,8 @@ func (w *watcher) writeFeed() error {
 		Language:    "en",
 		Description: feedDesc.String(),
 	}
+	// Sort so that episodes in the feed are ordered newest to oldest.
+	sort.Sort(sort.Reverse(vidsChronoSorter(w.vids)))
 	for _, vi := range w.vids {
 		diskPath := vi.episodePath(w.cfg.YTDLWriteExt)
 		f, err := os.Open(diskPath)
