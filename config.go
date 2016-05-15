@@ -22,7 +22,7 @@ func loadConfig(path string) (c *config, err error) {
 		return nil, err
 	}
 
-	// Do some sanity on the config's values:
+	// Do some sanity checks on the config's values:
 
 	if c.YTDataAPIKey == "" {
 		return nil, errors.New("missing YouTube Data API key")
