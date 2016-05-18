@@ -199,8 +199,10 @@ func (w *watcher) writeFeed() error {
 		Language:    "en",
 		Description: feedDesc.String(),
 	}
+
 	// Sort so that episodes in the feed are ordered newest to oldest.
 	sort.Sort(sort.Reverse(vidsChronoSorter(w.vids)))
+
 	for _, vi := range w.vids {
 		diskPath := vi.episodePath(w.cfg.YTDLWriteExt)
 		f, err := os.Open(diskPath)
@@ -252,6 +254,9 @@ func (w *watcher) writeFeed() error {
 		return err
 	}
 	fmt.Fprintln(f)
+	lastFeedWriteTimeMu.Lock()
+	defer lastFeedWriteTimeMu.Unlock()
+	lastFeedWriteTime = time.Now()
 	return nil
 }
 

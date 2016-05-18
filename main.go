@@ -87,17 +87,21 @@ func run(cfg *config) error {
 	}
 
 	// Run a webserver to serve the episode and metadata files.
+	mux := http.NewServeMux()
 	files := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod)
+	mux.Handle("/", http.FileServer(files))
+	mux.HandleFunc(httpHealthPrefix, healthHandler)
+
 	websrv := http.Server{
 		Addr:    fmt.Sprint(cfg.ServeHost, ":", cfg.ServePort),
-		Handler: http.FileServer(files),
+		Handler: mux,
 		// Conserve # open FDs by pruning persistent (keep-alive) HTTP conns.
 		ReadTimeout: websrvClientReadTimout,
 	}
 	err := websrv.ListenAndServe()
 	if err != nil {
 		samePortAllInterfaces := fmt.Sprint(":", cfg.ServePort)
-		log.Printf("Web server failed to listen on %v, trying %v instead",
+		log.Printf("Web server could not listen on %v, trying %v instead",
 			websrv.Addr, samePortAllInterfaces)
 		websrv.Addr = samePortAllInterfaces
 		err = websrv.ListenAndServe()
