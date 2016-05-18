@@ -103,14 +103,13 @@ func ytdlOld() (bool, error) {
 	return age > ytdlOldThreshold, nil
 }
 
-var (
-	lastFeedWriteTime   time.Time
-	lastFeedWriteTimeMu sync.Mutex
-)
+var lastTimeAnyFeedWritten struct {
+	sync.Mutex
+	val time.Time
+}
 
 func feedsStale() (bool, error) {
-	lastFeedWriteTimeMu.Lock()
-	defer lastFeedWriteTimeMu.Unlock()
-	age := time.Since(lastFeedWriteTime)
-	return age > feedsStaleThreshold, nil
+	lastTimeAnyFeedWritten.Lock()
+	defer lastTimeAnyFeedWritten.Unlock()
+	return time.Since(lastTimeAnyFeedWritten.val) > feedsStaleThreshold, nil
 }

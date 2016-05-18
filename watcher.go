@@ -141,6 +141,11 @@ func (w *watcher) processLatest(latestVids []ytVidInfo) {
 	if areNewVids || problemResolved {
 		if err := w.writeFeed(); err != nil {
 			log.Printf("%s: Writing feed failed: %v", w.show, err)
+		} else {
+			t := time.Now()
+			lastTimeAnyFeedWritten.Lock()
+			defer lastTimeAnyFeedWritten.Unlock()
+			lastTimeAnyFeedWritten.val = t
 		}
 	}
 
@@ -254,9 +259,6 @@ func (w *watcher) writeFeed() error {
 		return err
 	}
 	fmt.Fprintln(f)
-	lastFeedWriteTimeMu.Lock()
-	defer lastFeedWriteTimeMu.Unlock()
-	lastFeedWriteTime = time.Now()
 	return nil
 }
 
