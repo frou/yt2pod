@@ -18,8 +18,8 @@ import (
 
 	"google.golang.org/api/youtube/v3"
 
+	"github.com/frou/podcasts"
 	"github.com/frou/stdext"
-	"github.com/jbub/podcasts"
 	"github.com/nfnt/resize"
 )
 
@@ -181,6 +181,7 @@ func (w *watcher) download(vi ytVidInfo, firstTry bool) error {
 }
 
 func (w *watcher) writeFeed() error {
+	channelLink := "https://www.youtube.com/channel/" + w.show.YTChannelID
 	// Construct the blurb used in the feed description that's likely displayed
 	// to podcast client users.
 	feedDesc := new(bytes.Buffer)
@@ -188,9 +189,9 @@ func (w *watcher) writeFeed() error {
 	if feedDesc.Len() == 0 {
 		// No custom description was provided in the config. Derive one from
 		// the rest of the config.
-		fmt.Fprint(feedDesc,
-			"Generated based on the videos of YouTube channel ",
-			w.show.YTChannelReadableName)
+		fmt.Fprintf(feedDesc, "Generated based on the videos of YouTube "+
+			`channel <a href="%s">%s</a>`,
+			channelLink, w.show.YTChannelReadableName)
 		if !w.show.Epoch.IsZero() {
 			fmt.Fprintf(feedDesc, " published from %s onwards",
 				w.show.EpochStr)
@@ -205,7 +206,7 @@ func (w *watcher) writeFeed() error {
 	// Use the podcasts package to construct the XML for the file.
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.show.Name,
-		Link:        "https://www.youtube.com/channel/" + w.show.YTChannelID,
+		Link:        channelLink,
 		Copyright:   w.show.YTChannelReadableName,
 		Language:    "en",
 		Description: feedDesc.String(),
@@ -229,9 +230,9 @@ func (w *watcher) writeFeed() error {
 		}
 		epSize := info.Size()
 		epURL := w.cfg.urlFor(diskPath)
-		epSummary := fmt.Sprintf(
-			"%s // Original YouTube video: https://www.youtube.com/watch?v=%s",
-			vi.desc, vi.id)
+		epSummary := &podcasts.ItunesSummary{fmt.Sprintf(
+			`%s // <a href="https://www.youtube.com/watch?v=%s">Original YouTube video</a>`,
+			vi.desc, vi.id)}
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,
 			Summary: epSummary,
