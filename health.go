@@ -24,9 +24,9 @@ import (
 // Request:
 //     /health
 // Reponse:
-//    disk_low		OK
-//    ytdl_old		CONCERN
-//	  feeds_stale	OK
+//    disk_low      OK
+//    ytdl_old      CONCERN
+//    feeds_stale   OK
 
 const (
 	httpHealthPrefix = "/health/"
