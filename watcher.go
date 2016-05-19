@@ -182,19 +182,25 @@ func (w *watcher) download(vi ytVidInfo, firstTry bool) error {
 
 func (w *watcher) writeFeed() error {
 	// Construct the blurb used in the feed description that's likely displayed
-	// to podcast client users. It's kept shorter when the show has less
-	// configuration.
+	// to podcast client users.
 	feedDesc := new(bytes.Buffer)
-	fmt.Fprint(feedDesc, "Generated based on the videos of YouTube channel ",
-		w.show.YTChannelReadableName)
-	if !w.show.Epoch.IsZero() {
-		fmt.Fprintf(feedDesc, " published from %s onwards", w.show.EpochStr)
+	feedDesc.WriteString(w.show.Description)
+	if feedDesc.Len() == 0 {
+		// No custom description was provided in the config. Derive one from
+		// the rest of the config.
+		fmt.Fprint(feedDesc,
+			"Generated based on the videos of YouTube channel ",
+			w.show.YTChannelReadableName)
+		if !w.show.Epoch.IsZero() {
+			fmt.Fprintf(feedDesc, " published from %s onwards",
+				w.show.EpochStr)
+		}
+		if w.show.TitleFilterStr != "" {
+			fmt.Fprintf(feedDesc, " with titles matching \"%s\"",
+				w.show.TitleFilterStr)
+		}
+		fmt.Fprintf(feedDesc, " // %s", versionLabel)
 	}
-	if w.show.TitleFilterStr != "" {
-		fmt.Fprintf(feedDesc, " with titles matching \"%s\"",
-			w.show.TitleFilterStr)
-	}
-	fmt.Fprintf(feedDesc, " // %s", versionLabel)
 
 	// Use the podcasts package to construct the XML for the file.
 	feedBuilder := &podcasts.Podcast{

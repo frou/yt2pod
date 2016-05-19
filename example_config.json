@@ -20,6 +20,7 @@
         {
             "name": "MDE Standup",
             "short_name": "mde_sup",
+            "description": "Edgelords Crossing",
 
             "yt_channel": "MillionDollarExtreme",
             "title_filter": "stand.?up",

@@ -96,8 +96,9 @@ type show struct {
 	YTChannelID           string
 	YTChannelReadableName string
 
-	Name      string `json:"name"`
-	ShortName string `json:"short_name"`
+	Name        string `json:"name"`
+	ShortName   string `json:"short_name"`
+	Description string `json:"description"`
 
 	TitleFilterStr string `json:"title_filter"`
 	TitleFilter    *regexp.Regexp

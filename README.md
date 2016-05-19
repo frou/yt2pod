@@ -19,7 +19,7 @@ A built-in webserver serves the following for each podcast.
 
 Main configuration is done using [a JSON file][egcfg].
 
-For each podcast ("show"):
+Configuration for each ("show") includes:
 
 * `yt_channel` is either the YouTube channel's Username or its ID (a
 24-character string starting "UC").
@@ -33,6 +33,10 @@ Videos uploaded before the epoch are ignored.
 
 * `title_filter` is a regular expression. Videos with a title matching it have
 a podcast episode created for them. Use an empty string if you want them all.
+
+* `description` is freeform text that's likely displayed to users in their
+podcast clients. If this is empty or omitted, a generic description will be
+derived from the rest of the config.
 
 ## YouTube Data API
 
