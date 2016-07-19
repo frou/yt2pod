@@ -8,7 +8,7 @@
     "serve_host": "podcasts.example.com",
     "serve_port": 8120,
 
-    "shows": [
+    "podcasts": [
         {
             "name": "VORW: The Voice of TheReportOfTheWeek",
             "short_name": "vorw",

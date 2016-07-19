@@ -30,40 +30,41 @@ func loadConfig(path string) (c *config, err error) {
 	if min := 1; c.CheckIntervalMinutes < min {
 		return nil, fmt.Errorf("check interval must be >= %d minutes", min)
 	}
-	if len(c.Shows) == 0 {
-		return nil, errors.New("no shows are defined")
+	if len(c.Podcasts) == 0 {
+		return nil, errors.New("no podcasts are defined")
 	}
 	// Normalize e.g. ".m4a" and "m4a"
 	c.YTDLWriteExt = strings.TrimLeft(c.YTDLWriteExt, ".")
 
-	showShortNameSet := make(map[string]struct{})
-	for i := range c.Shows {
+	podcastShortNameSet := make(map[string]struct{})
+	for i := range c.Podcasts {
 		// Parse Epoch
 		var t time.Time
 		var err error
-		if es := c.Shows[i].EpochStr; es != "" {
+		if es := c.Podcasts[i].EpochStr; es != "" {
 			t, err = time.Parse("2006-01-02", es)
 			if err != nil {
 				return nil, err
 			}
 		}
-		c.Shows[i].Epoch = t
+		c.Podcasts[i].Epoch = t
 
 		// Parse Title Filter
 		re, err := regexp.Compile(
 			// Ensure the re does case-insensitive matching.
-			fmt.Sprintf("(?i:%s)", c.Shows[i].TitleFilterStr))
+			fmt.Sprintf("(?i:%s)", c.Podcasts[i].TitleFilterStr))
 		if err != nil {
 			return nil, err
 		}
-		c.Shows[i].TitleFilter = re
+		c.Podcasts[i].TitleFilter = re
 
-		// Check for show shortname (in effect primary key) collisions.
-		sn := c.Shows[i].ShortName
-		if _, found := showShortNameSet[sn]; found {
-			return nil, fmt.Errorf("multiple shows using shortname \"%s\"", sn)
+		// Check for podcast shortname (in effect primary key) collisions.
+		sn := c.Podcasts[i].ShortName
+		if _, found := podcastShortNameSet[sn]; found {
+			return nil, fmt.Errorf(
+				"multiple podcasts using shortname \"%s\"", sn)
 		}
-		showShortNameSet[sn] = struct{}{}
+		podcastShortNameSet[sn] = struct{}{}
 	}
 
 	return c, err
@@ -72,13 +73,13 @@ func loadConfig(path string) (c *config, err error) {
 // ------------------------------------------------------------
 
 type config struct {
-	YTDataAPIKey         string `json:"yt_data_api_key"`
-	CheckIntervalMinutes int    `json:"check_interval_minutes"`
-	YTDLFmtSelector      string `json:"ytdl_fmt_selector"`
-	YTDLWriteExt         string `json:"ytdl_write_ext"`
-	ServeHost            string `json:"serve_host"`
-	ServePort            int    `json:"serve_port"`
-	Shows                []show `json:"shows"`
+	YTDataAPIKey         string    `json:"yt_data_api_key"`
+	CheckIntervalMinutes int       `json:"check_interval_minutes"`
+	YTDLFmtSelector      string    `json:"ytdl_fmt_selector"`
+	YTDLWriteExt         string    `json:"ytdl_write_ext"`
+	ServeHost            string    `json:"serve_host"`
+	ServePort            int       `json:"serve_port"`
+	Podcasts             []podcast `json:"podcasts"`
 }
 
 func (c *config) urlFor(filePath string) string {
@@ -91,7 +92,7 @@ func (c *config) urlFor(filePath string) string {
 
 // ------------------------------------------------------------
 
-type show struct {
+type podcast struct {
 	YTChannel             string `json:"yt_channel"`
 	YTChannelID           string
 	YTChannelReadableName string
@@ -107,14 +108,14 @@ type show struct {
 	Epoch    time.Time
 }
 
-func (s *show) feedPath() string {
-	return filepath.Join(dataSubdirMetadata, s.ShortName+".xml")
+func (p *podcast) feedPath() string {
+	return filepath.Join(dataSubdirMetadata, p.ShortName+".xml")
 }
 
-func (s *show) artPath() string {
-	return filepath.Join(dataSubdirMetadata, s.ShortName+".jpg")
+func (p *podcast) artPath() string {
+	return filepath.Join(dataSubdirMetadata, p.ShortName+".jpg")
 }
 
-func (s *show) String() string {
-	return s.ShortName
+func (p *podcast) String() string {
+	return p.ShortName
 }

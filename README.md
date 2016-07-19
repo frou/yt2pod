@@ -19,7 +19,7 @@ A built-in webserver serves the following for each podcast.
 
 Main configuration is done using [a JSON file][egcfg].
 
-Configuration for each ("show") includes:
+Configuration for each podcast includes:
 
 * `yt_channel` is either the YouTube channel's Username or its ID (a
 24-character string starting "UC").

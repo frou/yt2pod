@@ -8,10 +8,10 @@ import (
 
 // Remove files in the data directory that are no longer relevant given the
 // configuration file we're using.
-func clean(showCount int, cleanc <-chan *cleaningWhitelist) (int, error) {
+func clean(podcastCount int, cleanc <-chan *cleaningWhitelist) (int, error) {
 	keepers := make(map[string]struct{})
 
-	for i := 0; i < showCount; i++ {
+	for i := 0; i < podcastCount; i++ {
 		wl := <-cleanc
 		for _, p := range wl.paths {
 			keepers[p] = struct{}{}
@@ -63,8 +63,8 @@ func (w *watcher) sendCleaningWhitelist(vids []ytVidInfo) {
 		wlist.paths = append(wlist.paths,
 			vi.episodePath(w.cfg.YTDLWriteExt))
 	}
-	wlist.paths = append(wlist.paths, w.show.artPath())
-	wlist.paths = append(wlist.paths, w.show.feedPath())
+	wlist.paths = append(wlist.paths, w.pod.artPath())
+	wlist.paths = append(wlist.paths, w.pod.feedPath())
 	w.cleanc <- &wlist
 	<-wlist.cleanFinishedC
 }

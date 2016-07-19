@@ -64,14 +64,14 @@ func run(cfg *config) error {
 		cleanc = make(chan *cleaningWhitelist)
 	}
 
-	for i := range cfg.Shows {
+	for i := range cfg.Podcasts {
 		ytAPI, err := youtube.New(&http.Client{
 			Transport: &transport.APIKey{Key: apiKey},
 		})
 		if err != nil {
 			return err
 		}
-		wat, err := newWatcher(ytAPI, cfg, &cfg.Shows[i], cleanc)
+		wat, err := newWatcher(ytAPI, cfg, &cfg.Podcasts[i], cleanc)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -79,7 +79,7 @@ func run(cfg *config) error {
 	}
 
 	if *dataClean {
-		n, err := clean(len(cfg.Shows), cleanc)
+		n, err := clean(len(cfg.Podcasts), cleanc)
 		if err != nil {
 			return err
 		}

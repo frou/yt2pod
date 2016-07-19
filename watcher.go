@@ -26,7 +26,7 @@ import (
 type watcher struct {
 	ytAPI         *youtube.Service
 	cfg           *config
-	show          *show
+	pod           *podcast
 	checkInterval time.Duration
 
 	initialCheck bool
@@ -38,13 +38,13 @@ type watcher struct {
 	cleanc      chan *cleaningWhitelist
 }
 
-func newWatcher(ytAPI *youtube.Service, cfg *config, show *show,
+func newWatcher(ytAPI *youtube.Service, cfg *config, pod *podcast,
 	cleanc chan *cleaningWhitelist) (*watcher, error) {
 
 	w := watcher{
 		ytAPI:         ytAPI,
 		cfg:           cfg,
-		show:          show,
+		pod:           pod,
 		checkInterval: time.Duration(cfg.CheckIntervalMinutes) * time.Minute,
 
 		initialCheck: true,
@@ -69,15 +69,15 @@ func (w *watcher) watch() {
 		// only query vids published after the last check.
 		var pubdAfter time.Time
 		if w.initialCheck {
-			pubdAfter = w.show.Epoch
-			if !w.show.Epoch.IsZero() {
+			pubdAfter = w.pod.Epoch
+			if !w.pod.Epoch.IsZero() {
 				log.Printf("%s: Epoch is configured as %s",
-					w.show, w.show.EpochStr)
+					w.pod, w.pod.EpochStr)
 			}
 			// Write out the feed early. Even though it contains no items yet,
 			// it's better that the XML file exist in some form vs 404ing.
 			if err := w.writeFeed(); err != nil {
-				log.Printf("%s: Writing feed failed: %v", w.show, err)
+				log.Printf("%s: Writing feed failed: %v", w.pod, err)
 			}
 		} else {
 			pubdAfter = w.lastChecked
@@ -86,10 +86,10 @@ func (w *watcher) watch() {
 		// Do the check.
 		latestVids, err := w.getLatest(pubdAfter)
 		if err != nil {
-			log.Printf("%s: Getting latest vids failed: %v", w.show, err)
+			log.Printf("%s: Getting latest vids failed: %v", w.pod, err)
 			if w.ytAPIRespite > 0 {
 				log.Printf("%s: Giving YouTube API %v respite",
-					w.show, w.ytAPIRespite)
+					w.pod, w.ytAPIRespite)
 				time.Sleep(w.ytAPIRespite)
 				w.ytAPIRespite = 0
 			}
@@ -111,12 +111,12 @@ func (w *watcher) processLatest(latestVids []ytVidInfo) {
 	areNewVids := len(latestVids) > 0
 	if areNewVids {
 		log.Printf("%s: %d vids of interest published (makes %d in total)",
-			w.show, len(latestVids), len(w.vids))
+			w.pod, len(latestVids), len(w.vids))
 	}
 	var areNewProblems, problemResolved bool
 	for _, vi := range latestVids {
 		if err := w.download(vi, true); err != nil {
-			log.Printf("%s: %s download failed: %v", w.show, vi.id, err)
+			log.Printf("%s: %s download failed: %v", w.pod, vi.id, err)
 			w.problemVids[vi.id] = vi
 			areNewProblems = true
 		}
@@ -126,21 +126,21 @@ func (w *watcher) processLatest(latestVids []ytVidInfo) {
 	// previous) checks.
 	if areNewProblems {
 		log.Printf("%s: There are now %d problem vids",
-			w.show, len(w.problemVids))
+			w.pod, len(w.problemVids))
 	}
 	for _, vi := range w.problemVids {
 		err := w.download(vi, false)
 		if err == nil {
 			delete(w.problemVids, vi.id)
 			problemResolved = true
-			log.Printf("%s: Resolved problem vid %s", w.show, vi.id)
+			log.Printf("%s: Resolved problem vid %s", w.pod, vi.id)
 		}
 	}
 
 	// Write the podcast feed XML to disk.
 	if areNewVids || problemResolved {
 		if err := w.writeFeed(); err != nil {
-			log.Printf("%s: Writing feed failed: %v", w.show, err)
+			log.Printf("%s: Writing feed failed: %v", w.pod, err)
 		} else {
 			t := time.Now()
 			lastTimeAnyFeedWritten.Lock()
@@ -150,9 +150,9 @@ func (w *watcher) processLatest(latestVids []ytVidInfo) {
 	}
 
 	if w.initialCheck {
-		// This is helpful to appear in the log (but only once per show).
+		// This is helpful to appear in the log (but only once per podcast).
 		log.Printf("%s: URL for feed is configured as %s",
-			w.show, w.cfg.urlFor(w.show.feedPath()))
+			w.pod, w.cfg.urlFor(w.pod.feedPath()))
 	}
 }
 
@@ -165,7 +165,7 @@ func (w *watcher) download(vi ytVidInfo, firstTry bool) error {
 	cmdLine := fmt.Sprintf("%s -f %s -o %s --socket-timeout 30 -- %s",
 		downloadCmdName, w.cfg.YTDLFmtSelector, diskPath, vi.id)
 	if firstTry {
-		log.Printf("%s: Download intent: %s", w.show, cmdLine)
+		log.Printf("%s: Download intent: %s", w.pod, cmdLine)
 	}
 
 	var errBuf bytes.Buffer
@@ -184,29 +184,29 @@ func (w *watcher) writeFeed() error {
 	// Construct the blurb used in the feed description that's likely displayed
 	// to podcast client users.
 	feedDesc := new(bytes.Buffer)
-	feedDesc.WriteString(w.show.Description)
+	feedDesc.WriteString(w.pod.Description)
 	if feedDesc.Len() == 0 {
 		// No custom description was provided in the config. Derive one from
 		// the rest of the config.
 		fmt.Fprint(feedDesc,
 			"Generated based on the videos of YouTube channel ",
-			w.show.YTChannelReadableName)
-		if !w.show.Epoch.IsZero() {
+			w.pod.YTChannelReadableName)
+		if !w.pod.Epoch.IsZero() {
 			fmt.Fprintf(feedDesc, " published from %s onwards",
-				w.show.EpochStr)
+				w.pod.EpochStr)
 		}
-		if w.show.TitleFilterStr != "" {
+		if w.pod.TitleFilterStr != "" {
 			fmt.Fprintf(feedDesc, " with titles matching \"%s\"",
-				w.show.TitleFilterStr)
+				w.pod.TitleFilterStr)
 		}
 		fmt.Fprintf(feedDesc, " :: %s", versionLabel)
 	}
 
 	// Use the podcasts package to construct the XML for the file.
 	feedBuilder := &podcasts.Podcast{
-		Title:       w.show.Name,
-		Link:        "https://www.youtube.com/channel/" + w.show.YTChannelID,
-		Copyright:   w.show.YTChannelReadableName,
+		Title:       w.pod.Name,
+		Link:        "https://www.youtube.com/channel/" + w.pod.YTChannelID,
+		Copyright:   w.pod.YTChannelReadableName,
 		Language:    "en",
 		Description: feedDesc.String(),
 	}
@@ -231,7 +231,7 @@ func (w *watcher) writeFeed() error {
 		epURL := w.cfg.urlFor(diskPath)
 		epSummary := &podcasts.ItunesSummary{fmt.Sprintf(
 			`%s :: <a href="https://www.youtube.com/watch?v=%s">`+
-			`Link to original YouTube video</a>`,
+				`Link to original YouTube video</a>`,
 			vi.desc, vi.id)}
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,
@@ -249,19 +249,19 @@ func (w *watcher) writeFeed() error {
 		// Apply iTunes-specific XML elements.
 		podcasts.Author(feedBuilder.Copyright),
 		podcasts.Summary(feedBuilder.Description),
-		podcasts.Image(w.cfg.urlFor(w.show.artPath())))
+		podcasts.Image(w.cfg.urlFor(w.pod.artPath())))
 	if err != nil {
 		return err
 	}
 
 	// Write the feed XML to disk.
-	f, err := os.OpenFile(w.show.feedPath(),
+	f, err := os.OpenFile(w.pod.feedPath(),
 		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, stdext.OwnerWritableReg)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	log.Printf("%s: Writing out feed", w.show)
+	log.Printf("%s: Writing out feed", w.pod)
 	if err := feed.Write(f); err != nil {
 		return err
 	}
@@ -276,7 +276,7 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 	)
 	for {
 		apiReq := w.ytAPI.Search.List("id,snippet").
-			ChannelId(w.show.YTChannelID).
+			ChannelId(w.pod.YTChannelID).
 			Type("video").
 			PublishedAfter(pubdAfter.Format(time.RFC3339)).
 			Order("date").
@@ -294,7 +294,7 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 			if item.Id.Kind != "youtube#video" {
 				return nil, errors.New("non-video in response items")
 			}
-			if !w.show.TitleFilter.MatchString(item.Snippet.Title) {
+			if !w.pod.TitleFilter.MatchString(item.Snippet.Title) {
 				// Not interested in this vid.
 				continue
 			}
@@ -324,10 +324,10 @@ func (w *watcher) getChannelInfo() error {
 	apiReq := w.ytAPI.Channels.List("id,snippet").MaxResults(1)
 	// Work out whether yt_channel specified in config is an ID or Username and
 	// modify the API request accordingly.
-	if ytChannelIDFormat.MatchString(w.show.YTChannel) {
-		apiReq = apiReq.Id(w.show.YTChannel)
+	if ytChannelIDFormat.MatchString(w.pod.YTChannel) {
+		apiReq = apiReq.Id(w.pod.YTChannel)
 	} else {
-		apiReq = apiReq.ForUsername(w.show.YTChannel)
+		apiReq = apiReq.ForUsername(w.pod.YTChannel)
 	}
 	apiResp, err := apiReq.Do()
 	if err != nil {
@@ -336,7 +336,7 @@ func (w *watcher) getChannelInfo() error {
 
 	switch len(apiResp.Items) {
 	case 0:
-		return errors.New("not a channel id: " + w.show.YTChannelID)
+		return errors.New("not a channel id: " + w.pod.YTChannelID)
 	case 1:
 		if apiResp.Items[0].Kind == "youtube#channel" {
 			break
@@ -348,8 +348,8 @@ func (w *watcher) getChannelInfo() error {
 	ch := apiResp.Items[0]
 
 	// We now know the channel's ID regardless of whether it was in config.
-	w.show.YTChannelID = ch.Id
-	w.show.YTChannelReadableName = ch.Snippet.Title
+	w.pod.YTChannelID = ch.Id
+	w.pod.YTChannelReadableName = ch.Snippet.Title
 
 	// Get the channel image referenced by the thumbnail field.
 	chImgURL := ch.Snippet.Thumbnails.High.Url
@@ -388,7 +388,7 @@ func (w *watcher) getChannelInfo() error {
 	}
 
 	// Write the image to disk.
-	f, err := os.OpenFile(w.show.artPath(),
+	f, err := os.OpenFile(w.pod.artPath(),
 		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, stdext.OwnerWritableReg)
 	if err != nil {
 		return err
