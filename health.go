@@ -33,6 +33,7 @@ const (
 )
 
 var healthConcerns = map[string]healthFunc{
+	// TODO: Use reflection to construct the resource names from the func nms.
 	"disk_low":    diskLow,
 	"ytdl_old":    ytdlOld,
 	"feeds_stale": feedsStale,
@@ -89,6 +90,9 @@ func diskLow() (bool, error) {
 }
 
 func ytdlOld() (bool, error) {
+	// TODO: Cache this for ... minutes because otherwise requesting /health
+	// could be a DoS because every request forks a process that takes ~2s to
+	// run.
 	version, err := exec.Command(downloadCmdName, "--version").Output()
 	if err != nil {
 		return false, err
