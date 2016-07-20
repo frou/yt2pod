@@ -79,7 +79,8 @@ With [Go] installed (available in all good package managers):
 
 The `yt2pod` binary should now be built and located in `$GOPATH/bin`
 
-The binary has a runtime depenency on the [youtube-dl command][ytdl] (available in all good package managers).
+The binary has a runtime dependency on the [youtube-dl command][ytdl]
+(available in all good package managers).
 
 ---
 
