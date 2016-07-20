@@ -229,7 +229,7 @@ func (w *watcher) writeFeed() error {
 		}
 		epSize := info.Size()
 		epURL := w.cfg.urlFor(diskPath)
-		epSummary := &podcasts.ItunesSummary{fmt.Sprintf(
+		epSummary := &podcasts.ItunesSummary{Value: fmt.Sprintf(
 			`%s :: <a href="https://www.youtube.com/watch?v=%s">`+
 				`Link to original YouTube video</a>`,
 			vi.desc, vi.id)}

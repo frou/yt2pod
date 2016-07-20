@@ -22,7 +22,7 @@ func loadConfig(path string) (c *config, err error) {
 		return nil, err
 	}
 
-	// Do some sanity checks on the config's values:
+	// Do some sanity checks the loaded values:
 
 	if c.YTDataAPIKey == "" {
 		return nil, errors.New("missing YouTube Data API key")
@@ -30,11 +30,26 @@ func loadConfig(path string) (c *config, err error) {
 	if min := 1; c.CheckIntervalMinutes < min {
 		return nil, fmt.Errorf("check interval must be >= %d minutes", min)
 	}
+	if c.YTDLFmtSelector == "" {
+		return nil, fmt.Errorf("missing %s format selector", downloadCmdName)
+	}
+	if c.YTDLWriteExt == "" {
+		return nil, fmt.Errorf("missing %s file type extension",
+			downloadCmdName)
+	}
+	if c.ServeHost == "" {
+		return nil, errors.New("missing host to webserve on")
+	}
+	if c.ServePort == 0 {
+		return nil, errors.New("missing fixed port to webserve on")
+	}
+
+	// Normalize e.g. ".m4a" and "m4a"
+	c.YTDLWriteExt = strings.TrimLeft(c.YTDLWriteExt, ".")
+
 	if len(c.Podcasts) == 0 {
 		return nil, errors.New("no podcasts are defined")
 	}
-	// Normalize e.g. ".m4a" and "m4a"
-	c.YTDLWriteExt = strings.TrimLeft(c.YTDLWriteExt, ".")
 
 	podcastShortNameSet := make(map[string]struct{})
 	for i := range c.Podcasts {
