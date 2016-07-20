@@ -19,24 +19,29 @@ A built-in webserver serves the following for each podcast.
 
 Main configuration is done using [a JSON file][egcfg].
 
-Configuration for each podcast includes:
+Each podcast is configured as an element of the `"podcasts"` array. In each:
 
-* `yt_channel` is either the YouTube channel's Username or its ID (a
-24-character string starting "UC").
+* `yt_channel` is either the YouTube channel's Username **or** its ID (a
+24-character string starting "UC"). Note that on modern YouTube, not every
+channel has a Username. Go to the channel's page using your web browser and
+look at the URL and you will find either one or the other.
 
-    * Note that on modern YouTube, not every channel has a Username. Go to the
-      channel's page using your web browser and look at the URL and you will
-      find either one or the other.
-
-* `epoch` is a date (YYYY-MM-DD or an empty string to mean from-the-beginning).
-Videos uploaded before the epoch are ignored.
+* `epoch` is a date (`"YYYY-MM-DD"` or an empty string to mean the beginning of
+time). Videos uploaded before the epoch are ignored.
 
 * `title_filter` is a regular expression. Videos with a title matching it have
 a podcast episode created for them. Use an empty string if you want them all.
 
-* `description` is freeform text that's likely displayed to users in their
-podcast clients. If this is empty or omitted, a generic description will be
-derived from the rest of the config.
+* `name` is the name of the podcast to be shown to the user in their podcast
+client.
+
+* `description` is the description of the podcast to be shown to the user in
+their podcast client. If this is omitted or is the empty string, a
+matter-of-fact description will be generated.
+
+* `short_name` is a unique name that will be used for things like the podcast
+feed's file name and logging. For example, for podcast with a `name` of `"This
+Week In Bikeshedding"`, use a `short_name` like `"twib"`.
 
 ## YouTube Data API
 
