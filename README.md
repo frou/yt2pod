@@ -17,7 +17,7 @@ A built-in webserver serves the following for each podcast.
 
 # Configuration
 
-Main configuration is done using [a JSON file][egcfg].
+Configuration is specified in a JSON file. [Here is an example config file][egcfg].
 
 Each podcast is configured as an element of the `"podcasts"` array. In each:
 
@@ -43,14 +43,9 @@ matter-of-fact description will be generated.
 feed's file name and logging. For example, for podcast with a `name` of `"This
 Week In Bikeshedding"`, use a `short_name` like `"twib"`.
 
-## YouTube Data API
-
-YouTube's Data API is used to query information. If you want to use [your
-own][apikey] API key, replace the one in the example config file.
-
 ## Flags
 
-There are some command-line flags:
+In addition to the config file, there are a handful of command-line flags:
 
 ```text
 $ yt2pod -help
@@ -70,6 +65,12 @@ flags:
   -version
       show version information then exit
 ```
+
+## YouTube Data API
+
+YouTube's Data API is used to query information. The example config file
+contains an API key that you can use, or you can [get your own API key][apikey]
+and use it instead.
 
 # Building & Dependencies
 
