@@ -68,9 +68,8 @@ flags:
 
 ## YouTube Data API
 
-YouTube's Data API is used to query information. The example config file
-contains an API key that you can use, or you can [get your own API key][apikey]
-and use it instead.
+YouTube's Data API is used to query information. The [example config
+file][egcfg] contains an API key that you can use, or you can [get your own API key][apikey] and use it instead.
 
 # Building & Dependencies
 
@@ -80,8 +79,7 @@ With [Go] installed (available in all good package managers):
 
 The `yt2pod` binary should now be built and located in `$GOPATH/bin`
 
-The only runtime depenency is the [youtube-dl command][ytdl] (available in all
-good package managers).
+The binary has a runtime depenency on the [youtube-dl command][ytdl] (available in all good package managers).
 
 ---
 
