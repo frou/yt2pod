@@ -199,7 +199,6 @@ func (w *watcher) writeFeed() error {
 			fmt.Fprintf(feedDesc, " with titles matching \"%s\"",
 				w.pod.TitleFilterStr)
 		}
-		fmt.Fprintf(feedDesc, " :: %s", versionLabel)
 	}
 
 	// Use the podcasts package to construct the XML for the file.
@@ -208,6 +207,7 @@ func (w *watcher) writeFeed() error {
 		Link:        "https://www.youtube.com/channel/" + w.pod.YTChannelID,
 		Copyright:   w.pod.YTChannelReadableName,
 		Language:    "en",
+		Generator:   versionLabel + " from https://github.com/frou/yt2pod",
 		Description: feedDesc.String(),
 	}
 
@@ -230,7 +230,7 @@ func (w *watcher) writeFeed() error {
 		epSize := info.Size()
 		epURL := w.cfg.urlFor(diskPath)
 		epSummary := &podcasts.ItunesSummary{Value: fmt.Sprintf(
-			`%s :: <a href="https://www.youtube.com/watch?v=%s">`+
+			`%s // <a href="https://www.youtube.com/watch?v=%s">`+
 				`Link to original YouTube video</a>`,
 			vi.desc, vi.id)}
 		feedBuilder.AddItem(&podcasts.Item{

@@ -19,8 +19,7 @@ import (
 )
 
 func setup() (*config, error) {
-	stdext.SetPreFlagsUsageMessage(
-		versionLabel + " :: https://github.com/frou/yt2pod")
+	stdext.SetPreFlagsUsageMessage(versionLabel)
 	flag.Parse()
 
 	if *showVersion {
