@@ -9,9 +9,12 @@ simultaneously and publish a separate audio podcast based on each (and even
 multiple podcasts based on the same channel).
 
 A built-in webserver serves the following for each podcast.
-* RSS Feed: `/meta/{configured_short_name}.xml`
-* Artwork: `/meta/{configured_short_name}.jpg`
-* Audio Episodes: `/ep/{yt_video_id}.{configured_file_ext}`
+* RSS Feed:
+  * `http://{configured_serve_host}:{configured_serve_port}/meta/{configured_short_name}.xml`
+* Artwork:
+  * `http://{configured_serve_host}:{configured_serve_port}/meta/{configured_short_name}.jpg`
+* Audio Episode(s):
+  * `http://{configured_serve_host}:{configured_serve_port}/ep/{yt_video_id}.{configured_ytdl_write_ext}`
 
 ---
 
