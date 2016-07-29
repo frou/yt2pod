@@ -75,6 +75,7 @@ func loadConfig(path string) (c *config, err error) {
 
 		// Check for podcast shortname (in effect primary key) collisions.
 		sn := c.Podcasts[i].ShortName
+		// TODO: Check that shortname is not empty string either
 		if _, found := podcastShortNameSet[sn]; found {
 			return nil, fmt.Errorf(
 				"multiple podcasts using shortname \"%s\"", sn)
