@@ -71,7 +71,8 @@ func run(cfg *config) error {
 		if err != nil {
 			return err
 		}
-		wat, err := newWatcher(ytAPI, cfg, i, cleanc)
+		wat, err := newWatcher(
+			ytAPI, cfg.watcherConfig, &cfg.Podcasts[i], cleanc)
 		if err != nil {
 			log.Fatal(err)
 		}

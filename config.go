@@ -11,6 +11,62 @@ import (
 	"time"
 )
 
+type config struct {
+	YTDataAPIKey string `json:"yt_data_api_key"`
+	watcherConfig
+	Podcasts []podcast `json:"podcasts"`
+}
+
+type watcherConfig struct {
+	CheckIntervalMinutes int    `json:"check_interval_minutes"`
+	YTDLFmtSelector      string `json:"ytdl_fmt_selector"`
+	YTDLWriteExt         string `json:"ytdl_write_ext"`
+	ServeHost            string `json:"serve_host"`
+	ServePort            int    `json:"serve_port"`
+}
+
+func (wc *watcherConfig) urlFor(filePath string) string {
+	var portPart string
+	if wc.ServePort != 80 {
+		portPart = fmt.Sprintf(":%d", wc.ServePort)
+	}
+	return fmt.Sprintf("http://%s%s/%s", wc.ServeHost, portPart, filePath)
+}
+
+// ------------------------------------------------------------
+
+type podcast struct {
+	YTChannel             string `json:"yt_channel"`
+	YTChannelID           string
+	YTChannelReadableName string
+
+	Name        string `json:"name"`
+	ShortName   string `json:"short_name"`
+	Description string `json:"description"`
+
+	TitleFilterStr string `json:"title_filter"`
+	TitleFilter    *regexp.Regexp
+
+	EpochStr string `json:"epoch"`
+	Epoch    time.Time
+
+	Vidya bool `json:"vidya"`
+}
+
+func (p *podcast) feedPath() string {
+	return filepath.Join(dataSubdirMetadata, p.ShortName+".xml")
+}
+
+func (p *podcast) artPath() string {
+	return filepath.Join(dataSubdirMetadata, p.ShortName+".jpg")
+}
+
+func (p *podcast) String() string {
+	return p.ShortName
+}
+
+// ------------------------------------------------------------
+
 func loadConfig(path string) (c *config, err error) {
 	// Load & decode config from disk.
 	buf, err := ioutil.ReadFile(path)
@@ -84,61 +140,4 @@ func loadConfig(path string) (c *config, err error) {
 	}
 
 	return c, err
-}
-
-// ------------------------------------------------------------
-
-type config struct {
-	YTDataAPIKey string `json:"yt_data_api_key"`
-	ServeHost    string `json:"serve_host"`
-	ServePort    int    `json:"serve_port"`
-
-	// TODO: Have these fields in an (anonymous?) sub-struct since they should
-	// be able to be passed around with a reference to the podcasts slice
-	// coming along for the ride. watcherConfig?
-	CheckIntervalMinutes int    `json:"check_interval_minutes"`
-	YTDLFmtSelector      string `json:"ytdl_fmt_selector"`
-	YTDLWriteExt         string `json:"ytdl_write_ext"`
-
-	Podcasts []podcast `json:"podcasts"`
-}
-
-func (c *config) urlFor(filePath string) string {
-	var portPart string
-	if c.ServePort != 80 {
-		portPart = fmt.Sprintf(":%d", c.ServePort)
-	}
-	return fmt.Sprintf("http://%s%s/%s", c.ServeHost, portPart, filePath)
-}
-
-// ------------------------------------------------------------
-
-type podcast struct {
-	YTChannel             string `json:"yt_channel"`
-	YTChannelID           string
-	YTChannelReadableName string
-
-	Name        string `json:"name"`
-	ShortName   string `json:"short_name"`
-	Description string `json:"description"`
-
-	TitleFilterStr string `json:"title_filter"`
-	TitleFilter    *regexp.Regexp
-
-	EpochStr string `json:"epoch"`
-	Epoch    time.Time
-
-	Vidya bool `json:"vidya"`
-}
-
-func (p *podcast) feedPath() string {
-	return filepath.Join(dataSubdirMetadata, p.ShortName+".xml")
-}
-
-func (p *podcast) artPath() string {
-	return filepath.Join(dataSubdirMetadata, p.ShortName+".jpg")
-}
-
-func (p *podcast) String() string {
-	return p.ShortName
 }

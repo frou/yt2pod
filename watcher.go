@@ -25,7 +25,7 @@ import (
 
 type watcher struct {
 	ytAPI         *youtube.Service
-	cfg           config
+	cfg           watcherConfig
 	pod           *podcast
 	checkInterval time.Duration
 
@@ -38,19 +38,22 @@ type watcher struct {
 	cleanc      chan *cleaningWhitelist
 }
 
-func newWatcher(ytAPI *youtube.Service, cfg *config, podIdx int,
+func newWatcher(ytAPI *youtube.Service, cfg watcherConfig, pod *podcast,
 	cleanc chan *cleaningWhitelist) (*watcher, error) {
 
 	w := watcher{
 		ytAPI:         ytAPI,
-		cfg:           *cfg,
+		cfg:           cfg,
+		pod:           pod,
 		checkInterval: time.Duration(cfg.CheckIntervalMinutes) * time.Minute,
 
 		initialCheck: true,
 		problemVids:  make(map[string]ytVidInfo),
 		cleanc:       cleanc,
 	}
-	w.pod = &w.cfg.Podcasts[podIdx]
+
+	// Make a video podcast (720p or 360p) instead of a normal audio podcast.
+	// This is undocumented for now.
 	if w.pod.Vidya {
 		w.cfg.YTDLFmtSelector = "22/18"
 		w.cfg.YTDLWriteExt = "mp4"
@@ -243,6 +246,7 @@ func (w *watcher) writeFeed() error {
 		if w.pod.Vidya {
 			enclosureType = "video"
 		}
+		enclosureType = fmt.Sprint(enclosureType, "/", w.cfg.YTDLWriteExt)
 
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,
@@ -252,7 +256,7 @@ func (w *watcher) writeFeed() error {
 			Enclosure: &podcasts.Enclosure{
 				URL:    epURL,
 				Length: fmt.Sprint(epSize),
-				Type:   fmt.Sprint(enclosureType, "/", w.cfg.YTDLWriteExt),
+				Type:   enclosureType,
 			},
 		})
 	}
