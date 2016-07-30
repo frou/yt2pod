@@ -21,6 +21,9 @@ type watcherConfig struct {
 	CheckIntervalMinutes int    `json:"check_interval_minutes"`
 	YTDLFmtSelector      string `json:"ytdl_fmt_selector"`
 	YTDLWriteExt         string `json:"ytdl_write_ext"`
+	// TODO: Have the Serve* fields in the `config` struct, and have a urlFor
+	// method on watcher that gets the host:addr from `websrv` (which is now
+	// global)'s .Addr field.
 	ServeHost            string `json:"serve_host"`
 	ServePort            int    `json:"serve_port"`
 }
