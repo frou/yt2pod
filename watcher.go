@@ -25,7 +25,7 @@ import (
 
 type watcher struct {
 	ytAPI         *youtube.Service
-	cfg           *config
+	cfg           config
 	pod           *podcast
 	checkInterval time.Duration
 
@@ -38,19 +38,24 @@ type watcher struct {
 	cleanc      chan *cleaningWhitelist
 }
 
-func newWatcher(ytAPI *youtube.Service, cfg *config, pod *podcast,
+func newWatcher(ytAPI *youtube.Service, cfg *config, podIdx int,
 	cleanc chan *cleaningWhitelist) (*watcher, error) {
 
 	w := watcher{
 		ytAPI:         ytAPI,
-		cfg:           cfg,
-		pod:           pod,
+		cfg:           *cfg,
 		checkInterval: time.Duration(cfg.CheckIntervalMinutes) * time.Minute,
 
 		initialCheck: true,
 		problemVids:  make(map[string]ytVidInfo),
 		cleanc:       cleanc,
 	}
+	w.pod = &w.cfg.Podcasts[podIdx]
+	if w.pod.Vidya {
+		w.cfg.YTDLFmtSelector = "22/18"
+		w.cfg.YTDLWriteExt = "mp4"
+	}
+
 	// Up front, check that the YouTube API is working. Do this by fetching the
 	// name of the channel and its 'avatar' image (both made use of later).
 	err := w.getChannelInfo()
@@ -233,6 +238,12 @@ func (w *watcher) writeFeed() error {
 			`%s // <a href="https://www.youtube.com/watch?v=%s">`+
 				`Link to original YouTube video</a>`,
 			vi.desc, vi.id)}
+
+		enclosureType := "audio"
+		if w.pod.Vidya {
+			enclosureType = "video"
+		}
+
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,
 			Summary: epSummary,
@@ -241,7 +252,7 @@ func (w *watcher) writeFeed() error {
 			Enclosure: &podcasts.Enclosure{
 				URL:    epURL,
 				Length: fmt.Sprint(epSize),
-				Type:   "audio/" + w.cfg.YTDLWriteExt,
+				Type:   fmt.Sprint(enclosureType, "/", w.cfg.YTDLWriteExt),
 			},
 		})
 	}

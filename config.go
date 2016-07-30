@@ -122,6 +122,8 @@ type podcast struct {
 
 	EpochStr string `json:"epoch"`
 	Epoch    time.Time
+
+	Vidya bool `json:"vidya"`
 }
 
 func (p *podcast) feedPath() string {
