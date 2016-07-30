@@ -89,13 +89,18 @@ func loadConfig(path string) (c *config, err error) {
 // ------------------------------------------------------------
 
 type config struct {
-	YTDataAPIKey         string    `json:"yt_data_api_key"`
-	CheckIntervalMinutes int       `json:"check_interval_minutes"`
-	YTDLFmtSelector      string    `json:"ytdl_fmt_selector"`
-	YTDLWriteExt         string    `json:"ytdl_write_ext"`
-	ServeHost            string    `json:"serve_host"`
-	ServePort            int       `json:"serve_port"`
-	Podcasts             []podcast `json:"podcasts"`
+	YTDataAPIKey string `json:"yt_data_api_key"`
+	ServeHost    string `json:"serve_host"`
+	ServePort    int    `json:"serve_port"`
+
+	// TODO: Have these fields in an (anonymous?) sub-struct since they should
+	// be able to be passed around with a reference to the podcasts slice
+	// coming along for the ride. watcherConfig?
+	CheckIntervalMinutes int    `json:"check_interval_minutes"`
+	YTDLFmtSelector      string `json:"ytdl_fmt_selector"`
+	YTDLWriteExt         string `json:"ytdl_write_ext"`
+
+	Podcasts []podcast `json:"podcasts"`
 }
 
 func (c *config) urlFor(filePath string) string {
