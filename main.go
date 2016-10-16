@@ -87,9 +87,21 @@ func run(cfg *config) error {
 	}
 
 	// Run a webserver to serve the episode and metadata files.
+
 	mux := http.NewServeMux()
+
+	// TODO: Look for this in cfg. Missing/default is false
+	forbidDirSnoop := true
+
 	files := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod)
+	if forbidDirSnoop {
+		dirNames := []string{"", dataSubdirEpisodes, dataSubdirMetadata}
+		for _, name := range dirNames {
+			files.Forbid("/" + name)
+		}
+	}
 	mux.Handle("/", http.FileServer(files))
+
 	mux.HandleFunc(httpHealthPrefix, healthHandler)
 
 	websrv := http.Server{
