@@ -91,7 +91,7 @@ func run(cfg *config) error {
 
 	mux := http.NewServeMux()
 
-	// TODO: Look for this in cfg. Missing/default is false
+	// TODO^: Look for this in cfg. Missing/default is false
 	forbidDirSnoop := true
 
 	files := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod)

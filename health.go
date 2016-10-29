@@ -39,7 +39,7 @@ var healthConcerns = map[string]healthFunc{
 	"feeds_stale": feedsStale,
 }
 
-// TODO: Allow these to be overriden by cfg file.
+// TODO^: Allow these to be overriden by cfg file.
 const (
 	// TODO: Should this be absolute number of bytes or percentage of disk?
 	diskLowThreshold    = 1024 * 1024 * 1024  // 1GB
