@@ -39,7 +39,7 @@ func clean(podcastCount int, cleanc <-chan *cleaningWhitelist) (int, error) {
 		return nil
 	}
 
-	for _, subd := range []string{dataSubdirEpisodes, dataSubdirMetadata} {
+	for _, subd := range []string{dataSubdirEpisodes/*, dataSubdirMetadata*/} {
 		if err := cleanSubdir(subd); err != nil {
 			return rmCount, err
 		}
