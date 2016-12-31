@@ -39,7 +39,10 @@ func clean(podcastCount int, cleanc <-chan *cleaningWhitelist) (int, error) {
 		return nil
 	}
 
-	for _, subd := range []string{dataSubdirEpisodes/*, dataSubdirMetadata*/} {
+	// TODO(DH): To be able to use feed symlinks, I need to each comment the
+	// metadata subdir below, or update the cleanSubdir func above to not
+	// delete symlinks.
+	for _, subd := range []string{dataSubdirEpisodes /*, dataSubdirMetadata*/} {
 		if err := cleanSubdir(subd); err != nil {
 			return rmCount, err
 		}
