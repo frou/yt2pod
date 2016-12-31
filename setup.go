@@ -14,6 +14,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"syscall"
+	"time"
 
 	"github.com/frou/stdext"
 )
@@ -97,6 +99,11 @@ func setup() (*config, error) {
 			return nil, err
 		}
 	}
+
+	stdext.HandleSignal(syscall.SIGUSR1, true, func() {
+		lastTimeAnyFeedWritten.Set(time.Now())
+		log.Print("Reset the clock for stale feeds, due to signal")
+	})
 
 	return cfg, nil
 }

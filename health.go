@@ -39,7 +39,7 @@ var healthConcerns = map[string]healthFunc{
 	"feeds_stale": feedsStale,
 }
 
-// TODO^: Allow these to be overriden by cfg file.
+// TODO: Allow these to be overriden by cfg file.
 const (
 	// TODO: Should this be absolute number of bytes or percentage of disk?
 	diskLowThreshold    = 1024 * 1024 * 1024  // 1GB
@@ -109,13 +109,29 @@ func ytdlOld() (bool, error) {
 	return age > ytdlOldThreshold, nil
 }
 
-var lastTimeAnyFeedWritten struct {
+func feedsStale() (bool, error) {
+	return time.Since(lastTimeAnyFeedWritten.Get()) > feedsStaleThreshold, nil
+}
+
+// ------------------------------------------------------------
+
+var lastTimeAnyFeedWritten concTime
+
+// TODO(DH): Could I make a more general construct like Clojure's "atom" and
+// put that in stdext?
+type concTime struct {
 	sync.Mutex
 	val time.Time
 }
 
-func feedsStale() (bool, error) {
-	lastTimeAnyFeedWritten.Lock()
-	defer lastTimeAnyFeedWritten.Unlock()
-	return time.Since(lastTimeAnyFeedWritten.val) > feedsStaleThreshold, nil
+func (t *concTime) Get() time.Time {
+	t.Lock()
+	defer t.Unlock()
+	return t.val
+}
+
+func (t *concTime) Set(val time.Time) {
+	t.Lock()
+	defer t.Unlock()
+	t.val = val
 }

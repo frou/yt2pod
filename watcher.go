@@ -150,10 +150,7 @@ func (w *watcher) processLatest(latestVids []ytVidInfo) {
 		if err := w.writeFeed(); err != nil {
 			log.Printf("%s: Writing feed failed: %v", w.pod, err)
 		} else {
-			t := time.Now()
-			lastTimeAnyFeedWritten.Lock()
-			defer lastTimeAnyFeedWritten.Unlock()
-			lastTimeAnyFeedWritten.val = t
+			lastTimeAnyFeedWritten.Set(time.Now())
 		}
 	}
 
