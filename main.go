@@ -17,7 +17,7 @@ const (
 
 	downloadCmdName = "youtube-dl"
 
-	version = "1.2.0"
+	version = "1.3.0"
 
 	hitLoggingPeriod       = 24 * time.Hour
 	websrvClientReadTimout = 15 * time.Second
