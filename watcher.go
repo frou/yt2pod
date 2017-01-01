@@ -212,7 +212,7 @@ func (w *watcher) writeFeed() error {
 		Link:        "https://www.youtube.com/channel/" + w.pod.YTChannelID,
 		Copyright:   w.pod.YTChannelReadableName,
 		Language:    "en",
-		Generator:   versionLabel + " from https://github.com/frou/yt2pod",
+		Generator:   "https://github.com/frou/yt2pod " + version,
 		Description: feedDesc.String(),
 	}
 

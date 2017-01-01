@@ -38,9 +38,8 @@ var (
 	showVersion = flag.Bool("version", false,
 		"show version information then exit")
 
-	// Do not manually edit. This gets set using -ldflags during build.
-	version      = "0.0.0"
-	versionLabel = fmt.Sprintf("yt2pod v%s", version)
+	// Don't manually edit. Set using -ldflags -X during deployment.
+	version = "v0.0.0"
 )
 
 func main() {

@@ -21,11 +21,11 @@ import (
 )
 
 func setup() (*config, error) {
-	stdext.SetPreFlagsUsageMessage(versionLabel)
+	stdext.SetPreFlagsUsageMessage(version)
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Fprintln(os.Stderr, versionLabel)
+		fmt.Fprintln(os.Stderr, version)
 		os.Exit(0)
 	}
 
@@ -53,7 +53,7 @@ func setup() (*config, error) {
 	}
 	log.SetOutput(w)
 	log.SetFlags(flags)
-	log.Print(versionLabel)
+	log.Print(version)
 
 	// Load config from disk.
 	cfg, err := loadConfig(*configPath)
