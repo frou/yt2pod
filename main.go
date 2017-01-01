@@ -17,8 +17,6 @@ const (
 
 	downloadCmdName = "youtube-dl"
 
-	version = "1.3.1-pre"
-
 	hitLoggingPeriod       = 24 * time.Hour
 	websrvClientReadTimout = 15 * time.Second
 	ytAPIRespiteUnit       = 5 * time.Minute
@@ -40,6 +38,8 @@ var (
 	showVersion = flag.Bool("version", false,
 		"show version information then exit")
 
+	// Do not manually edit. This gets set using -ldflags during build.
+	version      = "0.0.0"
 	versionLabel = fmt.Sprintf("yt2pod v%s", version)
 )
 
