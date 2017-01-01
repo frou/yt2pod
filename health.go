@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"os/exec"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
+
+	"github.com/frou/stdext"
 )
 
 // Define HTTP handlers that an automated monitoring system can access to keep
@@ -115,23 +116,23 @@ func feedsStale() (bool, error) {
 
 // ------------------------------------------------------------
 
-var lastTimeAnyFeedWritten concTime
-
-// TODO(DH): Could I make a more general construct like Clojure's "atom" and
-// put that in stdext?
 type concTime struct {
-	sync.Mutex
-	val time.Time
+	stdext.ConcAtom
+}
+
+func newConcTime() *concTime {
+	t := new(concTime)
+	var zval time.Time
+	t.Set(zval)
+	return t
 }
 
 func (t *concTime) Get() time.Time {
-	t.Lock()
-	defer t.Unlock()
-	return t.val
+	return t.Deref().(time.Time)
 }
 
 func (t *concTime) Set(val time.Time) {
-	t.Lock()
-	defer t.Unlock()
-	t.val = val
+	t.Replace(val)
 }
+
+var lastTimeAnyFeedWritten = newConcTime()
