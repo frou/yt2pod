@@ -379,7 +379,8 @@ func (w *watcher) getChannelInfo() error {
 		case "image/png":
 			chImg, err = png.Decode(chImgResp.Body)
 		default:
-			err = fmt.Errorf("channel image: unexpected type: %s", typ)
+			err = fmt.Errorf("%s: channel image: unexpected type: %s",
+				w.pod, typ)
 		}
 		if err != nil {
 			return err
@@ -387,17 +388,17 @@ func (w *watcher) getChannelInfo() error {
 	} else {
 		if w.pod.CustomImagePath == w.pod.artPath() {
 			return fmt.Errorf(
-				"custom image path and automatic image path clash "+
-				"(both are: %v)", w.pod.CustomImagePath)
+				"%s: custom image path and automatic image path clash "+
+					"(both are: %v)", w.pod, w.pod.CustomImagePath)
 		}
 		f, err := os.Open(w.pod.CustomImagePath)
 		if err != nil {
-			return fmt.Errorf("custom image: %v", err)
+			return fmt.Errorf("%s: custom image: %v", w.pod, err)
 		}
 		defer f.Close()
 		chImg, _, err = image.Decode(f)
 		if err != nil {
-			return fmt.Errorf("custom image: %v", err)
+			return fmt.Errorf("%s: custom image: %v", w.pod, err)
 		}
 		log.Printf("%s: Using custom image from path %s",
 			w.pod, w.pod.CustomImagePath)
