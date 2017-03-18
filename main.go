@@ -38,8 +38,10 @@ var (
 	showVersion = flag.Bool("version", false,
 		"show version information then exit")
 
-	// Don't manually edit. Set using -ldflags -X during deployment.
-	version = "v0.0.0"
+	// Rather than bumping this by hand, consider setting it during compilation
+	// using: go build -ldflags "-X main.version=$X" where $X is a git tag name
+	// or SHA.
+	version = "v1.4.0"
 )
 
 func main() {
