@@ -117,22 +117,20 @@ func feedsStale() (bool, error) {
 // ------------------------------------------------------------
 
 type concTime struct {
-	stdext.ConcAtom
+	a *stdext.ConcAtom
 }
 
 func newConcTime() *concTime {
-	t := new(concTime)
 	var zval time.Time
-	t.Set(zval)
-	return t
+	return &concTime{a: stdext.NewConcAtom(zval)}
 }
 
 func (t *concTime) Get() time.Time {
-	return t.Deref().(time.Time)
+	return t.a.Deref().(time.Time)
 }
 
 func (t *concTime) Set(val time.Time) {
-	t.Replace(val)
+	t.a.Replace(val)
 }
 
 var lastTimeAnyFeedWritten = newConcTime()
