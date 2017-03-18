@@ -54,6 +54,7 @@ type podcast struct {
 	Epoch    time.Time
 
 	Vidya bool `json:"vidya"`
+	CustomImagePath string `json:"custom_image"`
 }
 
 func (p *podcast) feedPath() string {

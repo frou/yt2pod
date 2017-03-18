@@ -363,25 +363,44 @@ func (w *watcher) getChannelInfo() error {
 	w.pod.YTChannelID = ch.Id
 	w.pod.YTChannelReadableName = ch.Snippet.Title
 
-	// Get the channel image referenced by the thumbnail field.
-	chImgURL := ch.Snippet.Thumbnails.High.Url
-	chImgResp, err := http.Get(chImgURL)
-	if err != nil {
-		return err
-	}
-	defer chImgResp.Body.Close()
-
 	var chImg image.Image
-	switch typ := chImgResp.Header.Get("Content-Type"); typ {
-	case "image/jpeg":
-		chImg, err = jpeg.Decode(chImgResp.Body)
-	case "image/png":
-		chImg, err = png.Decode(chImgResp.Body)
-	default:
-		err = fmt.Errorf("channel image: unexpected type: %s", typ)
-	}
-	if err != nil {
-		return err
+	if w.pod.CustomImagePath == "" {
+		// Get the channel image referenced by the thumbnail field.
+		chImgURL := ch.Snippet.Thumbnails.High.Url
+		chImgResp, err := http.Get(chImgURL)
+		if err != nil {
+			return err
+		}
+		defer chImgResp.Body.Close()
+
+		switch typ := chImgResp.Header.Get("Content-Type"); typ {
+		case "image/jpeg":
+			chImg, err = jpeg.Decode(chImgResp.Body)
+		case "image/png":
+			chImg, err = png.Decode(chImgResp.Body)
+		default:
+			err = fmt.Errorf("channel image: unexpected type: %s", typ)
+		}
+		if err != nil {
+			return err
+		}
+	} else {
+		if w.pod.CustomImagePath == w.pod.artPath() {
+			return fmt.Errorf(
+				"custom image path and automatic image path clash "+
+				"(both are: %v)", w.pod.CustomImagePath)
+		}
+		f, err := os.Open(w.pod.CustomImagePath)
+		if err != nil {
+			return fmt.Errorf("custom image: %v", err)
+		}
+		defer f.Close()
+		chImg, _, err = image.Decode(f)
+		if err != nil {
+			return fmt.Errorf("custom image: %v", err)
+		}
+		log.Printf("%s: Using custom image from path %s",
+			w.pod, w.pod.CustomImagePath)
 	}
 
 	// Ensure that the dimensions of the image meet the minimum requirements to
