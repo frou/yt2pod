@@ -42,6 +42,11 @@ client.
 their podcast client. If this is omitted or is the empty string, a
 matter-of-fact description will be generated.
 
+* `custom_image` is a filesystem path (relative to the data directory - see the
+-data flag) for a custom image to use for the podcast's artwork. If this is
+omitted or is the empty string, the avatar image of the YouTube user this
+podcast is based on will be used.
+
 * `short_name` is a unique name that will be used for things like the podcast
 feed's file name and logging. For example, for podcast with a `name` of `"This
 Week In Bikeshedding"`, use a `short_name` like `"twib"`.
