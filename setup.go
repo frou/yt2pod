@@ -20,8 +20,10 @@ import (
 	"github.com/frou/stdext"
 )
 
+// TODO(DH): Push stdext to GH if before pushing new yt2pod
+
 func setup() (*config, error) {
-	stdext.SetPreFlagsUsageMessage(version)
+	stdext.SetPreFlagsUsageMessage(version, false)
 	flag.Parse()
 
 	if *showVersion {
