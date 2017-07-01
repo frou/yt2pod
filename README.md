@@ -8,13 +8,18 @@ A single instance of yt2pod can monitor multiple YouTube channels
 simultaneously and publish a separate audio podcast based on each (and even
 multiple podcasts based on the same channel).
 
-A built-in webserver serves the following for each podcast.
+A built-in webserver serves the following for each podcast:
+
 * RSS Feed:
-  * `http://{cfg_serve_host}:{cfg_serve_port}/meta/{cfg_short_name}.xml`
+  * `http://YOURDOMAIN.COM/meta/SHORT_NAME.xml`
 * Artwork:
-  * `http://{cfg_serve_host}:{cfg_serve_port}/meta/{cfg_short_name}.jpg`
-* Audio Episode(s):
-  * `http://{cfg_serve_host}:{cfg_serve_port}/ep/{yt_video_id}.{cfg_ytdl_write_ext}`
+  * `http://YOURDOMAIN.COM/meta/SHORT_NAME.jpg`
+* Audio Episodes:
+  * `http://YOURDOMAIN.COM/ep/id_of_source_youtube_video.EXT`
+  * ...
+  * ...
+
+The capitalised parts are specified in your config file.
 
 ---
 
