@@ -56,13 +56,11 @@ podcast is based on will be used.
 feed's file name and logging. For example, for podcast with a `name` of `"This
 Week In Bikeshedding"`, use a `short_name` like `"twib"`.
 
-## Flags
+## Command-line Flags
 
 In addition to the config file, there are a handful of command-line flags:
 
 ```text
-$ yt2pod -help
-
 usage:
   yt2pod [flags]
 
@@ -84,16 +82,15 @@ flags:
 YouTube's Data API is used to query information. The [example config
 file][egcfg] contains an API key that you can use, or you can [get your own API key][apikey] and use it instead.
 
-# Building & Dependencies
+# Building, and an external dependency
 
-With [Go] installed (available in all good package managers):
+With the [Go toolchain](https://golang.org/dl/) installed, the following shell command will download the source code and build it:
 
-`$ go get github.com/frou/yt2pod`
+`go get github.com/frou/yt2pod`
 
 The `yt2pod` binary should now be built and located in `$GOPATH/bin`
 
-The binary has a runtime dependency on the [youtube-dl command][ytdl]
-(available in all good package managers).
+🚨 The `yt2pod` binary calls out to the [youtube-dl][ytdl] command at runtime. You should make sure you have `youtube-dl` installed (it is available in all good package managers).
 
 ---
 
@@ -128,4 +125,3 @@ SOFTWARE.
 [egcfg]: https://github.com/frou/yt2pod/blob/master/example_config.json
 [ytdl]: https://rg3.github.io/youtube-dl/
 [apikey]: https://developers.google.com/youtube/registering_an_application
-[go]: https://golang.org/
