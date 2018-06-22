@@ -92,6 +92,41 @@ The `yt2pod` binary should now be built and located in `$GOPATH/bin`
 
 🚨 The `yt2pod` binary calls out to the [youtube-dl][ytdl] command at runtime. You should make sure you have `youtube-dl` installed (it is available in all good package managers).
 
+# Autostart with systemd daemon
+If you have a distro that uses systemd (like Ubuntu), you can make yt2pod work as a daemon.
+
+First, create a systemd service file by running:
+`sudo nano /etc/systemd/system/yt2pod.service`
+
+Use the following template:
+```
+Description=Podcast Daemon
+After=network.target
+
+[Service]
+User=yt2pod
+Group=yt2pod
+
+Type=simple
+ExecStart=/opt/yt2pod/yt2pod -syslog -config /home/yt2pod/config.json -data /home/yt2pod/data
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Make sure to change the location of the yt2pod binary, the location of the config.json and the data folder to were yours are, they must be set manually in the file otherwise the service will fail to start!
+
+Start the service:
+`sudo systemctl start yt2pod.service`
+
+Check for errors:
+`sudo systemctl status yt2pod.service`
+In case you get any errors, make sure to see your systemlog for more info about it.
+
+If no errors, enable the service to autostart with your computer:
+`sudo systemctl enable yt2pod.service`
+
 ---
 
 # License
