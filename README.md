@@ -127,6 +127,18 @@ In case you get any errors, make sure to see your systemlog for more info about 
 If no errors, enable the service to autostart with your computer:
 `sudo systemctl enable yt2pod.service`
 
+# Autostart with Docker
+
+Build image:
+```
+docker build . -t yt2pod
+```
+
+configure for autostart:
+```
+docker run --restart always -v ./config.json:/root/config.json -v ./data:/root/data -p 8120:8120 yt2pod
+```
+
 ---
 
 # License
