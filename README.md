@@ -82,9 +82,23 @@ flags:
 YouTube's Data API is used to query information. The [example config
 file][egcfg] contains an API key that you can use, or you can [get your own API key][apikey] and use it instead.
 
-# Building, and an external dependency
+# Building and running using Docker
 
-With the [Go toolchain](https://golang.org/dl/) installed, the following shell command will download the source code and build it:
+This project has a [Dockerfile](https://github.com/frou/yt2pod/blob/master/Dockerfile) to facilitate containerized building and deployment.
+
+Get the Dockerfile by cloning this repository and then use the following command to build the Docker image:
+
+`docker build . -t yt2pod`
+
+It can then be run using, for example, the following command:
+
+`docker run -v $PWD:/root -p 8888:8120 yt2pod`
+
+After you see from the output that it has successfully started, visit http://localhost:8888/ in your browser to see what's being served.
+
+# Building manually
+
+With the [Go toolchain](https://golang.org/dl/) installed, the following command will download the source code and build it:
 
 `go get github.com/frou/yt2pod`
 
@@ -92,52 +106,9 @@ The `yt2pod` binary should now be built and located in `$GOPATH/bin`
 
 🚨 The `yt2pod` binary calls out to the [youtube-dl][ytdl] command at runtime. You should make sure you have `youtube-dl` installed (it is available in all good package managers).
 
-# Autostart with systemd daemon
-If you have a distro that uses systemd (like Ubuntu), you can make yt2pod work as a daemon.
+# Running manually using systemd
 
-First, create a systemd service file by running:
-`sudo nano /etc/systemd/system/yt2pod.service`
-
-Use the following template:
-```
-Description=Podcast Daemon
-After=network.target
-
-[Service]
-User=yt2pod
-Group=yt2pod
-
-Type=simple
-ExecStart=/opt/yt2pod/yt2pod -syslog -config /home/yt2pod/config.json -data /home/yt2pod/data
-TimeoutStopSec=20
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Make sure to change the location of the yt2pod binary, the location of the config.json and the data folder to were yours are, they must be set manually in the file otherwise the service will fail to start!
-
-Start the service:
-`sudo systemctl start yt2pod.service`
-
-Check for errors:
-`sudo systemctl status yt2pod.service`
-In case you get any errors, make sure to see your systemlog for more info about it.
-
-If no errors, enable the service to autostart with your computer:
-`sudo systemctl enable yt2pod.service`
-
-# Autostart with Docker
-
-Build image:
-```
-docker build . -t yt2pod
-```
-
-configure for autostart:
-```
-docker run --restart always -v ./config.json:/root/config.json -v ./data:/root/data -p 8120:8120 yt2pod
-```
+@evertonstz has written [instructions](https://github.com/frou/yt2pod/wiki/systemd) on how to run yt2pod as a systemd service.
 
 ---
 
