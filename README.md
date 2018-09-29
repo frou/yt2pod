@@ -169,6 +169,6 @@ SOFTWARE.
 
 
 [yt2pod]: https://github.com/frou/yt2pod
-[egcfg]: https://github.com/frou/yt2pod/blob/master/example_config.json
+[egcfg]: https://github.com/frou/yt2pod/blob/master/config.json
 [ytdl]: https://rg3.github.io/youtube-dl/
 [apikey]: https://developers.google.com/youtube/registering_an_application

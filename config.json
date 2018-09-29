@@ -15,16 +15,15 @@
 
             "yt_channel": "UCeR0n8d3ShTn_yrMhpwyE1Q",
             "title_filter": "VORW",
-            "epoch": "2015-12-25"
+            "epoch": "2017-12-25"
         },
         {
-            "name": "MDE Standup",
-            "short_name": "mde_sup",
-            "description": "Edgelords Crossing",
+            "name": "Yegor256 Webinars",
+            "short_name": "yegor256",
+            "description": "OOP Extremism",
 
-            "yt_channel": "MillionDollarExtreme",
-            "title_filter": "stand.?up",
-            "epoch": ""
+            "yt_channel": "UCr9qCdqXLm2SU0BIs6d_68Q",
+            "title_filter": "Webinar"
         }
     ]
 }
