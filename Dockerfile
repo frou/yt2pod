@@ -14,4 +14,4 @@ RUN apk --no-cache add ca-certificates python3 py3-pip \
   && apk del py3-pip
 WORKDIR /root/
 COPY --from=0 /go/bin/yt2pod /usr/local/bin/
-CMD ["yt2pod", "-config", "config.json"]
+CMD ["yt2pod", "-dataclean"]
