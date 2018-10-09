@@ -41,7 +41,7 @@ var (
 	// Rather than bumping this by hand, consider setting it during compilation
 	// using: go build -ldflags "-X main.version=$X" where $X is a git tag name
 	// or SHA.
-	version = "v1.4.0"
+	version = "unknown"
 )
 
 func main() {
