@@ -92,16 +92,7 @@ func run(cfg *config) error {
 
 	mux := http.NewServeMux()
 
-	// TODO^: Load this from cfg. Missing/default is false
-	forbidDirSnoop := false
-
-	files := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod)
-	if forbidDirSnoop {
-		dirNames := []string{"", dataSubdirEpisodes, dataSubdirMetadata}
-		for _, name := range dirNames {
-			files.Forbid("/" + name)
-		}
-	}
+	files := newHitLoggingFsys(http.Dir("."), hitLoggingPeriod, cfg.ServeDirectoryListings)
 	mux.Handle("/", http.FileServer(files))
 
 	mux.HandleFunc(httpHealthPrefix, healthHandler)

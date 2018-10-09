@@ -24,8 +24,9 @@ type watcherConfig struct {
 	// TODO: Have the Serve* fields in the `config` struct, and have a urlFor
 	// method on watcher that gets the host:addr from `websrv` (which is now
 	// global)'s .Addr field.
-	ServeHost string `json:"serve_host"`
-	ServePort int    `json:"serve_port"`
+	ServeHost              string `json:"serve_host"`
+	ServePort              int    `json:"serve_port"`
+	ServeDirectoryListings bool   `json:"serve_directory_listings"`
 }
 
 func (wc *watcherConfig) urlFor(filePath string) string {

@@ -7,6 +7,7 @@
 
     "serve_host": "podcasts.example.com",
     "serve_port": 8120,
+    "serve_directory_listings": true,
 
     "podcasts": [
         {

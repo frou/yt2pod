@@ -10,21 +10,23 @@ import (
 
 // Wrap a http.FileSystem to log how many hits it gets every given period.
 type hitLoggingFsys struct {
-	fsImpl             http.FileSystem
-	hitc               chan string
-	period             time.Duration
-	periodTicker       *time.Ticker
-	forbiddenResources map[string]struct{}
+	fsImpl                 http.FileSystem
+	hitc                   chan string
+	period                 time.Duration
+	periodTicker           *time.Ticker
+	serveDirectoryListings bool
 }
 
 func newHitLoggingFsys(
-	fsImpl http.FileSystem, period time.Duration) *hitLoggingFsys {
+	fsImpl http.FileSystem,
+	period time.Duration,
+	serveDirectoryListings bool) *hitLoggingFsys {
 
 	h := hitLoggingFsys{
-		fsImpl:             fsImpl,
-		hitc:               make(chan string),
-		period:             period,
-		forbiddenResources: make(map[string]struct{}),
+		fsImpl:                 fsImpl,
+		hitc:                   make(chan string),
+		period:                 period,
+		serveDirectoryListings: serveDirectoryListings,
 	}
 	h.periodTicker = time.NewTicker(h.period)
 	go h.runLoop()
@@ -33,14 +35,21 @@ func newHitLoggingFsys(
 
 func (h *hitLoggingFsys) Open(name string) (http.File, error) {
 	h.hitc <- name
-	if _, ok := h.forbiddenResources[name]; ok {
-		return nil, errForbiddenResource
+	f, err := h.fsImpl.Open(name)
+	if err != nil {
+		return nil, err
 	}
-	return h.fsImpl.Open(name)
-}
 
-func (h *hitLoggingFsys) Forbid(name string) {
-	h.forbiddenResources[name] = struct{}{}
+	if !h.serveDirectoryListings {
+		stat, err := f.Stat()
+		if err != nil {
+			return nil, err
+		}
+		if stat.IsDir() {
+			return nil, errors.New("directory listing has been disallowed")
+		}
+	}
+	return f, nil
 }
 
 func (h *hitLoggingFsys) runLoop() {
@@ -58,7 +67,3 @@ func (h *hitLoggingFsys) runLoop() {
 		}
 	}
 }
-
-var (
-	errForbiddenResource = errors.New("forbidden resource")
-)
