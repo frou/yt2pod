@@ -58,9 +58,8 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil || flag {
 			return "CONCERN"
-		} else {
-			return "OK"
 		}
+		return "OK"
 	}
 
 	f, found := healthConcerns[name]
