@@ -5,17 +5,23 @@ package main
 import (
 	"fmt"
 
+	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 )
 
-func BuildWithBakedVersion() error {
-	dirty, err := gitRepositoryIsDirty()
+func DetectDirtyGitRepo() error {
+	status, err := sh.Output("git", "status", "--porcelain")
 	if err != nil {
 		return err
 	}
-	if dirty {
+	if status != "" {
 		return fmt.Errorf("git repository is dirty")
 	}
+	return nil
+}
+
+func BuildWithBakedVersion() error {
+	mg.Deps(DetectDirtyGitRepo)
 
 	var ourVersion string
 	tag, err := gitHeadTag()
@@ -31,13 +37,7 @@ func BuildWithBakedVersion() error {
 	return sh.RunV("go", "build", "-ldflags", fmt.Sprintf("-X main.yt2podVersion=%s", ourVersion))
 }
 
-func gitRepositoryIsDirty() (bool, error) {
-	status, err := sh.Output("git", "status", "--porcelain")
-	if err != nil {
-		return false, err
-	}
-	return status != "", nil
-}
+// ------------------------------------------------------------
 
 func gitHeadTag() (string, error) {
 	return sh.Output("git", "describe", "--tags", "--exact-match", "HEAD")
