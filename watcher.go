@@ -16,11 +16,10 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/api/youtube/v3"
-
 	"github.com/frou/podcasts"
 	"github.com/frou/stdext"
 	"github.com/nfnt/resize"
+	"google.golang.org/api/youtube/v3"
 )
 
 type watcher struct {
@@ -212,7 +211,7 @@ func (w *watcher) writeFeed() error {
 		Link:        "https://www.youtube.com/channel/" + w.pod.YTChannelID,
 		Copyright:   w.pod.YTChannelReadableName,
 		Language:    "en",
-		Generator:   "https://github.com/frou/yt2pod " + version,
+		Generator:   "https://github.com/frou/yt2pod " + yt2podVersion,
 		Description: feedDesc.String(),
 	}
 

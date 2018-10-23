@@ -21,11 +21,10 @@ import (
 )
 
 func setup() (*config, error) {
-	stdext.SetPreFlagsUsageMessage(version, false)
 	flag.Parse()
 
-	if *showVersion {
-		fmt.Fprintln(os.Stderr, version)
+	if *printVersion {
+		fmt.Fprintln(os.Stderr, yt2podVersion)
 		os.Exit(0)
 	}
 
@@ -53,7 +52,7 @@ func setup() (*config, error) {
 	}
 	log.SetOutput(w)
 	log.SetFlags(flags)
-	log.Printf("Version %s", version)
+	log.Printf("Version %s", yt2podVersion)
 
 	// Load config from disk.
 	cfg, err := loadConfig(*configPath)

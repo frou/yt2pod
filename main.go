@@ -35,13 +35,11 @@ var (
 	dataClean = flag.Bool("dataclean", false,
 		"during initialisation, remove files in the data directory that are irrelevant given the current config")
 
-	showVersion = flag.Bool("version", false,
-		"show version information then exit")
+	printVersion = flag.Bool("version", false,
+		"print version information then exit")
 
-	// Rather than bumping this by hand, consider setting it during compilation
-	// using: go build -ldflags "-X main.version=$X" where $X is a git tag name
-	// or SHA.
-	version = "unknown"
+	// This gets set by the Magefile
+	yt2podVersion = "unknown-version"
 )
 
 func main() {
