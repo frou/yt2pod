@@ -190,7 +190,7 @@ func (w *watcher) download(vi ytVidInfo, firstTry bool) error {
 func (w *watcher) buildURL(filePath string) string {
 	var portPart string
 	if w.cfg.ServePort != 80 {
-	        portPart = fmt.Sprintf(":%d", w.cfg.ServePort)
+		portPart = fmt.Sprintf(":%d", w.cfg.ServePort)
 	}
 	return fmt.Sprintf("http://%s%s/%s", w.cfg.ServeHost, portPart, filePath)
 }

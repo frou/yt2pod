@@ -2,16 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/frou/poor-mans-generics/set"
 	"github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 )
 
 type config struct {
@@ -30,8 +29,15 @@ type config struct {
 
 func (c *config) Validate() error {
 	return validation.ValidateStruct(c,
+		validation.Field(&c.ServePort, validation.Required, validation.Max(65535)),
 		validation.Field(&c.YTDataAPIKey, validation.Required),
-		validation.Field(&c.Podcasts, validation.Length(1, 0)))
+		validation.Field(&c.Podcasts, validation.Required, validation.Length(1, 0)),
+		validation.Field(&c.ServeHost, validation.Required, is.Host),
+		validation.Field(&c.ServeDirectoryListings),
+
+		validation.Field(&c.CheckIntervalMinutes, validation.Required, validation.Min(1)),
+		validation.Field(&c.YTDLFmtSelector, validation.Required),
+		validation.Field(&c.YTDLWriteExt, validation.Required, is.Alphanumeric))
 }
 
 // ------------------------------------------------------------
@@ -82,28 +88,6 @@ func loadConfig(path string) (c *config, err error) {
 	if err := c.Validate(); err != nil {
 		return nil, err
 	}
-
-	// Do some sanity checks the loaded values:
-
-	if min := 1; c.CheckIntervalMinutes < min {
-		return nil, fmt.Errorf("check interval must be >= %d minutes", min)
-	}
-	if c.YTDLFmtSelector == "" {
-		return nil, fmt.Errorf("missing %s format selector", downloadCmdName)
-	}
-	if c.YTDLWriteExt == "" {
-		return nil, fmt.Errorf("missing %s file type extension",
-			downloadCmdName)
-	}
-	if c.ServeHost == "" {
-		return nil, errors.New("missing host to webserve on")
-	}
-	if c.ServePort == 0 {
-		return nil, errors.New("missing fixed port to webserve on")
-	}
-
-	// Normalize e.g. ".m4a" and "m4a"
-	c.YTDLWriteExt = strings.TrimLeft(c.YTDLWriteExt, ".")
 
 	var podcastShortNameSet set.Strings
 	for i := range c.Podcasts {
