@@ -10,7 +10,9 @@ import (
 	"github.com/magefile/mage/sh"
 )
 
-func DetectDirtyGitRepo() error {
+var Default = StampedBuild
+
+func GitRepoIsClean() error {
 	status, err := sh.Output("git", "status", "--porcelain")
 	if err != nil {
 		return err
@@ -22,7 +24,7 @@ func DetectDirtyGitRepo() error {
 }
 
 func StampedBuild() error {
-	mg.Deps(DetectDirtyGitRepo)
+	mg.Deps(GitRepoIsClean)
 
 	var ourVersion string
 	tag, err := gitHeadTag()
