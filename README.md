@@ -82,6 +82,8 @@ flags:
 YouTube's Data API is used to query information. The [example config
 file][egcfg] contains an API key that you can use, or you can [get your own API key][apikey] and use it instead.
 
+---
+
 # Building and running using Docker
 
 This project has a [Dockerfile](https://github.com/frou/yt2pod/blob/master/Dockerfile) to facilitate containerized building and deployment.
@@ -96,6 +98,8 @@ It can then be run using, for example, the following command:
 
 After you see from the output that it has successfully started, visit http://localhost:8888/ in your browser to see what's being served.
 
+---
+
 # Building manually
 
 With the [Go toolchain](https://golang.org/dl/) installed, the following command will download the source code and build it:
@@ -106,9 +110,11 @@ The `yt2pod` binary should now be built and located in `$GOPATH/bin`
 
 🚨 The `yt2pod` binary calls out to the [youtube-dl][ytdl] command at runtime. You should make sure you have `youtube-dl` installed (it is available in all good package managers).
 
-# Running manually using systemd
+# Setting up as a Linux service
 
-@evertonstz has written [instructions](https://github.com/frou/yt2pod/wiki/systemd) on how to run yt2pod as a systemd service.
+If you don't want to run using Docker, then you will probably want to set up yt2pod as a service in your Linux distribution of choice.
+
+See hints regarding [systemd](https://github.com/frou/yt2pod/wiki/systemd) and [OpenRC](https://github.com/frou/yt2pod/wiki/OpenRC).
 
 ---
 
