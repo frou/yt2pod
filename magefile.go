@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
@@ -20,7 +21,7 @@ func DetectDirtyGitRepo() error {
 	return nil
 }
 
-func BuildWithBakedVersion() error {
+func StampedBuild() error {
 	mg.Deps(DetectDirtyGitRepo)
 
 	var ourVersion string
@@ -34,7 +35,16 @@ func BuildWithBakedVersion() error {
 		ourVersion = tag
 	}
 
-	return sh.RunV("go", "build", "-ldflags", fmt.Sprintf("-X main.yt2podVersion=%s", ourVersion))
+	varsSetByLinker := map[string]string{
+		"main.stampedBuildVersion": ourVersion,
+		"main.stampedBuildTime":    time.Now().Format(time.RFC3339),
+	}
+	var linkerArgs string
+	for name, value := range varsSetByLinker {
+		linkerArgs += fmt.Sprintf(" -X %s=%s", name, value)
+	}
+
+	return sh.RunV("go", "build", "-ldflags", linkerArgs)
 }
 
 // ------------------------------------------------------------

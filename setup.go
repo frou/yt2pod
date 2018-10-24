@@ -24,7 +24,8 @@ func setup() (*config, error) {
 	flag.Parse()
 
 	if *printVersion {
-		fmt.Fprintln(os.Stderr, yt2podVersion)
+		fmt.Fprintln(os.Stdout, "Version\t", stampedBuildVersion)
+		fmt.Fprintln(os.Stdout, "Built\t", stampedBuildTime)
 		os.Exit(0)
 	}
 
@@ -52,7 +53,7 @@ func setup() (*config, error) {
 	}
 	log.SetOutput(w)
 	log.SetFlags(flags)
-	log.Printf("Version %s", yt2podVersion)
+	log.Printf("Version %s", stampedBuildVersion)
 
 	// Load config from disk.
 	cfg, err := loadConfig(*configPath)
