@@ -209,7 +209,7 @@ func (w *watcher) writeFeed() error {
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.pod.Name,
 		Link:        "https://www.youtube.com/channel/" + w.pod.YTChannelID,
-		Copyright:   fmt.Sprintf("%s (podcast feed served by yt2pod %s)", w.pod.YTChannelReadableName, version),
+		Copyright:   fmt.Sprintf("%s (podcast feed served by yt2pod %s)", w.pod.YTChannelReadableName, stampedBuildVersion),
 		Language:    "en",
 		Description: feedDesc.String(),
 	}
