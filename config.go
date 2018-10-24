@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/frou/poor-mans-generics/set"
+	"github.com/go-ozzo/ozzo-validation"
 )
 
 type config struct {
@@ -18,6 +19,14 @@ type config struct {
 	watcherConfig
 	Podcasts []podcast `json:"podcasts"`
 }
+
+func (c *config) Validate() error {
+	return validation.ValidateStruct(c,
+		validation.Field(&c.YTDataAPIKey, validation.Required),
+		validation.Field(&c.Podcasts, validation.Length(3, 0)))
+}
+
+// ------------------------------------------------------------
 
 type watcherConfig struct {
 	CheckIntervalMinutes int    `json:"check_interval_minutes"`
@@ -84,12 +93,12 @@ func loadConfig(path string) (c *config, err error) {
 	if err := json.Unmarshal(buf, c); err != nil {
 		return nil, err
 	}
+	if err := c.Validate(); err != nil {
+		return nil, err
+	}
 
 	// Do some sanity checks the loaded values:
 
-	if c.YTDataAPIKey == "" {
-		return nil, errors.New("missing YouTube Data API key")
-	}
 	if min := 1; c.CheckIntervalMinutes < min {
 		return nil, fmt.Errorf("check interval must be >= %d minutes", min)
 	}
@@ -109,10 +118,6 @@ func loadConfig(path string) (c *config, err error) {
 
 	// Normalize e.g. ".m4a" and "m4a"
 	c.YTDLWriteExt = strings.TrimLeft(c.YTDLWriteExt, ".")
-
-	if len(c.Podcasts) == 0 {
-		return nil, errors.New("no podcasts are defined")
-	}
 
 	var podcastShortNameSet set.Strings
 	for i := range c.Podcasts {
