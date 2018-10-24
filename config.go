@@ -15,11 +15,11 @@ import (
 
 type config struct {
 	// High-level
-	YTDataAPIKey           string    `json:"yt_data_api_key"`
-	Podcasts               []podcast `json:"podcasts"`
-	ServeHost              string    `json:"serve_host"`
-	ServePort              int       `json:"serve_port"`
-	ServeDirectoryListings bool      `json:"serve_directory_listings"`
+	YTDataAPIKey           string     `json:"yt_data_api_key"`
+	Podcasts               []*podcast `json:"podcasts"`
+	ServeHost              string     `json:"serve_host"`
+	ServePort              int        `json:"serve_port"`
+	ServeDirectoryListings bool       `json:"serve_directory_listings"`
 
 	// Watcher-related
 	CheckIntervalMinutes int    `json:"check_interval_minutes"`
@@ -29,10 +29,10 @@ type config struct {
 
 func (c *config) Validate() error {
 	return validation.ValidateStruct(c,
-		validation.Field(&c.ServePort, validation.Required, validation.Max(65535)),
 		validation.Field(&c.YTDataAPIKey, validation.Required),
 		validation.Field(&c.Podcasts, validation.Required, validation.Length(1, 0)),
 		validation.Field(&c.ServeHost, validation.Required, is.Host),
+		validation.Field(&c.ServePort, validation.Required, validation.Max(65535)),
 		validation.Field(&c.ServeDirectoryListings),
 
 		validation.Field(&c.CheckIntervalMinutes, validation.Required, validation.Min(1)),
@@ -59,6 +59,22 @@ type podcast struct {
 
 	Vidya           bool   `json:"vidya"`
 	CustomImagePath string `json:"custom_image"`
+}
+
+func (p *podcast) Validate() error {
+	return validation.ValidateStruct(p,
+		validation.Field(&p.YTChannel, validation.Required),
+
+		validation.Field(&p.Name, validation.Required),
+		validation.Field(&p.ShortName, validation.Required),
+		validation.Field(&p.Description),
+
+		validation.Field(&p.TitleFilterStr),
+
+		validation.Field(&p.EpochStr, validation.Match(regexp.MustCompile(`^$|^\d{4}-\d{2}-\d{2}$`))),
+
+		validation.Field(&p.Vidya),
+		validation.Field(&p.CustomImagePath))
 }
 
 func (p *podcast) feedPath() string {
@@ -113,7 +129,6 @@ func loadConfig(path string) (c *config, err error) {
 
 		// Check for podcast shortname (in effect primary key) collisions.
 		sn := c.Podcasts[i].ShortName
-		// TODO: Check that shortname is not empty string either
 		if podcastShortNameSet.Contains(sn) {
 			return nil, fmt.Errorf(
 				"multiple podcasts using shortname \"%s\"", sn)
