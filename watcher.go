@@ -16,11 +16,10 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/api/youtube/v3"
-
 	"github.com/frou/podcasts"
 	"github.com/frou/stdext"
 	"github.com/nfnt/resize"
+	"google.golang.org/api/youtube/v3"
 )
 
 type watcher struct {

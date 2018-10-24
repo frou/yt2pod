@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/frou/poor-mans-generics/set"
 )
 
 type config struct {
@@ -112,7 +114,7 @@ func loadConfig(path string) (c *config, err error) {
 		return nil, errors.New("no podcasts are defined")
 	}
 
-	podcastShortNameSet := make(map[string]struct{})
+	var podcastShortNameSet set.Strings
 	for i := range c.Podcasts {
 		// Parse Epoch
 		var t time.Time
@@ -137,11 +139,11 @@ func loadConfig(path string) (c *config, err error) {
 		// Check for podcast shortname (in effect primary key) collisions.
 		sn := c.Podcasts[i].ShortName
 		// TODO: Check that shortname is not empty string either
-		if _, found := podcastShortNameSet[sn]; found {
+		if podcastShortNameSet.Contains(sn) {
 			return nil, fmt.Errorf(
 				"multiple podcasts using shortname \"%s\"", sn)
 		}
-		podcastShortNameSet[sn] = struct{}{}
+		podcastShortNameSet.Add(sn)
 	}
 
 	return c, err

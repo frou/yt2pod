@@ -4,17 +4,19 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/frou/poor-mans-generics/set"
 )
 
 // Remove files in the data directory that are no longer relevant given the
 // configuration file we're using.
 func clean(podcastCount int, cleanc <-chan *cleaningWhitelist) (int, error) {
-	keepers := make(map[string]struct{})
+	var keepers set.Strings
 
 	for i := 0; i < podcastCount; i++ {
 		wl := <-cleanc
 		for _, p := range wl.paths {
-			keepers[p] = struct{}{}
+			keepers.Add(p)
 		}
 		defer close(wl.cleanFinishedC)
 	}
@@ -28,7 +30,7 @@ func clean(podcastCount int, cleanc <-chan *cleaningWhitelist) (int, error) {
 		}
 		for _, info := range dirContents {
 			path := filepath.Join(subd, info.Name())
-			if _, found := keepers[path]; found {
+			if keepers.Contains(path) {
 				continue
 			}
 			if err := os.Remove(path); err != nil {
