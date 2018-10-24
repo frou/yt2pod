@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/frou/podcasts"
 	"github.com/frou/stdext"
+	"github.com/jbub/podcasts"
 	"github.com/nfnt/resize"
 	"google.golang.org/api/youtube/v3"
 )
