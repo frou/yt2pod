@@ -23,7 +23,7 @@ type config struct {
 func (c *config) Validate() error {
 	return validation.ValidateStruct(c,
 		validation.Field(&c.YTDataAPIKey, validation.Required),
-		validation.Field(&c.Podcasts, validation.Length(3, 0)))
+		validation.Field(&c.Podcasts, validation.Length(1, 0)))
 }
 
 // ------------------------------------------------------------
