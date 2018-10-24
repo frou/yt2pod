@@ -24,7 +24,7 @@ import (
 
 type watcher struct {
 	ytAPI         *youtube.Service
-	cfg           watcherConfig
+	cfg           *config
 	pod           *podcast
 	checkInterval time.Duration
 
@@ -37,7 +37,10 @@ type watcher struct {
 	cleanc      chan *cleaningWhitelist
 }
 
-func newWatcher(ytAPI *youtube.Service, cfg watcherConfig, pod *podcast,
+func newWatcher(
+	ytAPI *youtube.Service,
+	cfg *config,
+	pod *podcast,
 	cleanc chan *cleaningWhitelist) (*watcher, error) {
 
 	w := watcher{
@@ -156,7 +159,7 @@ func (w *watcher) processLatest(latestVids []ytVidInfo) {
 	if w.initialCheck {
 		// This is helpful to appear in the log (but only once per podcast).
 		log.Printf("%s: URL for feed is configured as %s",
-			w.pod, w.cfg.urlFor(w.pod.feedPath()))
+			w.pod, w.buildURL(w.pod.feedPath()))
 	}
 }
 
@@ -182,6 +185,14 @@ func (w *watcher) download(vi ytVidInfo, firstTry bool) error {
 		err = fmt.Errorf("%v: %s", err, errBuf.String())
 	}
 	return err
+}
+
+func (w *watcher) buildURL(filePath string) string {
+	var portPart string
+	if w.cfg.ServePort != 80 {
+	        portPart = fmt.Sprintf(":%d", w.cfg.ServePort)
+	}
+	return fmt.Sprintf("http://%s%s/%s", w.cfg.ServeHost, portPart, filePath)
 }
 
 func (w *watcher) writeFeed() error {
@@ -231,7 +242,7 @@ func (w *watcher) writeFeed() error {
 			continue
 		}
 		epSize := info.Size()
-		epURL := w.cfg.urlFor(diskPath)
+		epURL := w.buildURL(diskPath)
 		epSummary := &podcasts.ItunesSummary{Value: fmt.Sprintf(
 			`%s // <a href="https://www.youtube.com/watch?v=%s">`+
 				`Link to original YouTube video</a>`,
@@ -259,7 +270,7 @@ func (w *watcher) writeFeed() error {
 		// Apply iTunes-specific XML elements.
 		podcasts.Author(feedBuilder.Copyright),
 		podcasts.Summary(feedBuilder.Description),
-		podcasts.Image(w.cfg.urlFor(w.pod.artPath())))
+		podcasts.Image(w.buildURL(w.pod.artPath())))
 	if err != nil {
 		return err
 	}

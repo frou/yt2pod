@@ -14,29 +14,17 @@ import (
 )
 
 type config struct {
-	YTDataAPIKey string `json:"yt_data_api_key"`
-	watcherConfig
-	Podcasts []podcast `json:"podcasts"`
-}
+	// High-level
+	YTDataAPIKey           string    `json:"yt_data_api_key"`
+	Podcasts               []podcast `json:"podcasts"`
+	ServeHost              string    `json:"serve_host"`
+	ServePort              int       `json:"serve_port"`
+	ServeDirectoryListings bool      `json:"serve_directory_listings"`
 
-type watcherConfig struct {
+	// Watcher-related
 	CheckIntervalMinutes int    `json:"check_interval_minutes"`
 	YTDLFmtSelector      string `json:"ytdl_fmt_selector"`
 	YTDLWriteExt         string `json:"ytdl_write_ext"`
-	// TODO: Have the Serve* fields in the `config` struct, and have a urlFor
-	// method on watcher that gets the host:addr from `websrv` (which is now
-	// global)'s .Addr field.
-	ServeHost              string `json:"serve_host"`
-	ServePort              int    `json:"serve_port"`
-	ServeDirectoryListings bool   `json:"serve_directory_listings"`
-}
-
-func (wc *watcherConfig) urlFor(filePath string) string {
-	var portPart string
-	if wc.ServePort != 80 {
-		portPart = fmt.Sprintf(":%d", wc.ServePort)
-	}
-	return fmt.Sprintf("http://%s%s/%s", wc.ServeHost, portPart, filePath)
 }
 
 // ------------------------------------------------------------
