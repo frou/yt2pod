@@ -34,17 +34,16 @@ const (
 )
 
 var healthConcerns = map[string]healthFunc{
-	// TODO: Use reflection to construct the resource names from the func nms?
 	"disk_low":    diskLow,
 	"ytdl_old":    ytdlOld,
 	"feeds_stale": feedsStale,
 }
 
-// TODO: Allow these to be overriden by cfg file.
 const (
-	// TODO: Should this be absolute number of bytes or percentage of disk?
-	diskLowThreshold    = 1024 * 1024 * 1024  // 1GB
-	ytdlOldThreshold    = time.Hour * 24 * 60 // 60 days
+	// TODO: Make these optionally configurable in the config file.
+	diskLowThreshold = 1024 * 1024 * 1024  // 1GB
+	ytdlOldThreshold = time.Hour * 24 * 60 // 60 days
+	// TODO: Make this optionally configurable per-podcast in the config file.
 	feedsStaleThreshold = time.Hour * 24 * 10 // 10 days
 )
 
