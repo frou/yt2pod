@@ -2,6 +2,3 @@ language: go
 go:
   - "1.x"
 os: windows
-branches:
-  only:
-    - setup-windows-ci
