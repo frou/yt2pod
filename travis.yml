@@ -1,0 +1,6 @@
+language: go
+go:
+  - "1.x"
+branches:
+  only:
+    - setup-windows-ci
