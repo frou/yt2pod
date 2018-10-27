@@ -1,5 +1,7 @@
 language: go
 go:
   - "1.x"
-os: windows
-# TODO(DH): Run a job on Linux too
+os:
+  - linux
+  - osx
+  - windows
