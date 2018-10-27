@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os/exec"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/frou/stdext"
+	"github.com/ricochet2200/go-disk-usage/du"
 )
 
 // Define HTTP handlers that an automated monitoring system can access to keep
@@ -81,13 +81,9 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 type healthFunc func() (bool, error)
 
 func diskLow() (bool, error) {
-	var t syscall.Statfs_t
-	err := syscall.Statfs(".", &t)
-	if err != nil {
-		return false, err
-	}
-	bytesAvailable := uint64(t.Bsize) * t.Bavail
-	return bytesAvailable < diskLowThreshold, nil
+	// TODO(DH): Pass the global `dataPath` as the path to check?
+	ok := du.NewDiskUsage(".").Available() < diskLowThreshold
+	return ok, nil
 }
 
 func ytdlOld() (bool, error) {

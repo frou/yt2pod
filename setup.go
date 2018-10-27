@@ -7,17 +7,15 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"log/syslog"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
-	"syscall"
 	"time"
 
 	"github.com/frou/stdext"
+	"github.com/frou/yt2pod/platform"
 )
 
 func setup() (*config, error) {
@@ -36,13 +34,8 @@ func setup() (*config, error) {
 		err   error
 	)
 	if *useSyslog {
-		sender := filepath.Base(os.Args[0])
-		severity := syslog.LOG_INFO
-		if runtime.GOOS == "darwin" {
-			// OS X processes swallow LOG_INFO and LOG_DEBUG msgs by default.
-			severity = syslog.LOG_NOTICE
-		}
-		w, err = syslog.New(syslog.LOG_DAEMON|severity, sender)
+		executableName := filepath.Base(os.Args[0])
+		w, err = platform.NewSyslog(executableName)
 		if err != nil {
 			return nil, err
 		}
@@ -100,9 +93,9 @@ func setup() (*config, error) {
 		}
 	}
 
-	stdext.HandleSignal(syscall.SIGUSR1, true, func() {
+	platform.RegisterStalenessResetter(func() {
 		lastTimeAnyFeedWritten.Set(time.Now())
-		log.Print("Reset the clock for stale feeds, due to signal")
+		log.Print("The clock for stale feeds was reset")
 	})
 
 	return cfg, nil
