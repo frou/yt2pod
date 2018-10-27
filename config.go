@@ -2,24 +2,23 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"time"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/frou/poor-mans-generics/set"
 )
 
 type config struct {
 	// High-level
-	YTDataAPIKey           string    `json:"yt_data_api_key"`
-	Podcasts               []podcast `json:"podcasts"`
-	ServeHost              string    `json:"serve_host"`
-	ServePort              int       `json:"serve_port"`
-	ServeDirectoryListings bool      `json:"serve_directory_listings"`
+	YTDataAPIKey           string    `json:"yt_data_api_key"          valid:"required"`
+	Podcasts               []podcast `json:"podcasts"                 valid:"required"`
+	ServeHost              string    `json:"serve_host"               valid:"host"`
+	ServePort              int       `json:"serve_port"               valid:"port"`
+	ServeDirectoryListings bool      `json:"serve_directory_listings" valid:"-"`
 
 	// Watcher-related
 	CheckIntervalMinutes int    `json:"check_interval_minutes"`
@@ -73,33 +72,8 @@ func loadConfig(path string) (c *config, err error) {
 		return nil, err
 	}
 
-	// Do some sanity checks the loaded values:
-
-	if c.YTDataAPIKey == "" {
-		return nil, errors.New("missing YouTube Data API key")
-	}
-	if min := 1; c.CheckIntervalMinutes < min {
-		return nil, fmt.Errorf("check interval must be >= %d minutes", min)
-	}
-	if c.YTDLFmtSelector == "" {
-		return nil, fmt.Errorf("missing %s format selector", downloadCmdName)
-	}
-	if c.YTDLWriteExt == "" {
-		return nil, fmt.Errorf("missing %s file type extension",
-			downloadCmdName)
-	}
-	if c.ServeHost == "" {
-		return nil, errors.New("missing host to webserve on")
-	}
-	if c.ServePort == 0 {
-		return nil, errors.New("missing fixed port to webserve on")
-	}
-
-	// Normalize e.g. ".m4a" and "m4a"
-	c.YTDLWriteExt = strings.TrimLeft(c.YTDLWriteExt, ".")
-
-	if len(c.Podcasts) == 0 {
-		return nil, errors.New("no podcasts are defined")
+	if _, err := govalidator.ValidateStruct(c); err != nil {
+		return nil, err
 	}
 
 	var podcastShortNameSet set.Strings
@@ -126,7 +100,6 @@ func loadConfig(path string) (c *config, err error) {
 
 		// Check for podcast shortname (in effect primary key) collisions.
 		sn := c.Podcasts[i].ShortName
-		// TODO: Check that shortname is not empty string either
 		if podcastShortNameSet.Contains(sn) {
 			return nil, fmt.Errorf(
 				"multiple podcasts using shortname \"%s\"", sn)
