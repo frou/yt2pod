@@ -19,12 +19,12 @@ import (
 //
 // Request:
 //     /health/disk_low
-// Reponse:
+// Response:
 //     CONCERN
 //
 // Request:
 //     /health
-// Reponse:
+// Response:
 //    disk_low      OK
 //    ytdl_old      CONCERN
 //    feeds_stale   OK

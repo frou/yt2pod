@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/frou/yt2pod.svg?branch=master)](https://travis-ci.org/frou/yt2pod)
+[![GoDoc](https://godoc.org/github.com/frou/yt2pod?status.svg)](https://godoc.org/github.com/frou/yt2pod)
+[![Go Report Card](https://goreportcard.com/badge/github.com/frou/yt2pod)](https://goreportcard.com/report/github.com/frou/yt2pod)
+
 [yt2pod] is a daemon that monitors YouTube channels and publishes audio
 podcasts of them.
 
@@ -115,35 +119,6 @@ The `yt2pod` binary should now be built and located in `$GOPATH/bin`
 If you don't want to run using Docker, then you will probably want to set up yt2pod as a service in your Linux distribution of choice.
 
 See hints regarding [systemd](https://github.com/frou/yt2pod/wiki/systemd) and [OpenRC](https://github.com/frou/yt2pod/wiki/OpenRC).
-
----
-
-# License
-
-```text
-The MIT License
-
-Copyright (c) 2015 Duncan Holm
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
 
 [yt2pod]: https://github.com/frou/yt2pod
 [egcfg]: https://github.com/frou/yt2pod/blob/master/config.json
