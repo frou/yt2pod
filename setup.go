@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/frou/stdext"
-	"github.com/frou/yt2pod/platform"
+	"github.com/frou/yt2pod/internal/platform"
 )
 
 func setup() (*config, error) {
