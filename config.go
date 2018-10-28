@@ -2,50 +2,51 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/frou/poor-mans-generics/set"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type config struct {
 	// High-level
-	YTDataAPIKey           string    `json:"yt_data_api_key"`
-	Podcasts               []podcast `json:"podcasts"`
-	ServeHost              string    `json:"serve_host"`
-	ServePort              int       `json:"serve_port"`
-	ServeDirectoryListings bool      `json:"serve_directory_listings"`
+	YTDataAPIKey           string    `json:"yt_data_api_key"          validate:"required"`
+	Podcasts               []podcast `json:"podcasts"                 validate:"required,dive"`
+	ServeHost              string    `json:"serve_host"               validate:"hostname"`
+	ServePort              int       `json:"serve_port"               validate:"min=1,max=65535"`
+	ServeDirectoryListings bool      `json:"serve_directory_listings" validate:"-"`
 
 	// Watcher-related
-	CheckIntervalMinutes int    `json:"check_interval_minutes"`
-	YTDLFmtSelector      string `json:"ytdl_fmt_selector"`
-	YTDLWriteExt         string `json:"ytdl_write_ext"`
+	CheckIntervalMinutes int    `json:"check_interval_minutes" validate:"min=1"`
+	YTDLFmtSelector      string `json:"ytdl_fmt_selector"      validate:"required"`
+	YTDLWriteExt         string `json:"ytdl_write_ext"         validate:"alphanum"`
 }
 
 // ------------------------------------------------------------
 
 type podcast struct {
-	YTChannel             string `json:"yt_channel"`
+	YTChannel             string `json:"yt_channel" validate:"required"`
 	YTChannelID           string
 	YTChannelReadableName string
 
-	Name        string `json:"name"`
-	ShortName   string `json:"short_name"`
-	Description string `json:"description"`
+	Name        string `json:"name"        validate:"required"`
+	ShortName   string `json:"short_name"  validate:"required"`
+	Description string `json:"description" validate:"-"`
 
-	TitleFilterStr string `json:"title_filter"`
+	TitleFilterStr string `json:"title_filter" validate:"-"`
 	TitleFilter    *regexp.Regexp
 
-	EpochStr string `json:"epoch"`
+	EpochStr string `json:"epoch" validate:"epochformat"`
 	Epoch    time.Time
 
-	Vidya           bool   `json:"vidya"`
-	CustomImagePath string `json:"custom_image"`
+	Vidya           bool   `json:"vidya" validate:"-"`
+	CustomImagePath string `json:"custom_image" validate:"-"`
 }
 
 func (p *podcast) feedPath() string {
@@ -72,37 +73,11 @@ func loadConfig(path string) (c *config, err error) {
 	if err := json.Unmarshal(buf, c); err != nil {
 		return nil, err
 	}
-
-	// Do some sanity checks the loaded values:
-
-	if c.YTDataAPIKey == "" {
-		return nil, errors.New("missing YouTube Data API key")
-	}
-	if min := 1; c.CheckIntervalMinutes < min {
-		return nil, fmt.Errorf("check interval must be >= %d minutes", min)
-	}
-	if c.YTDLFmtSelector == "" {
-		return nil, fmt.Errorf("missing %s format selector", downloadCmdName)
-	}
-	if c.YTDLWriteExt == "" {
-		return nil, fmt.Errorf("missing %s file type extension",
-			downloadCmdName)
-	}
-	if c.ServeHost == "" {
-		return nil, errors.New("missing host to webserve on")
-	}
-	if c.ServePort == 0 {
-		return nil, errors.New("missing fixed port to webserve on")
+	validate := initValidator()
+	if err := validate.Struct(c); err != nil {
+		return nil, err
 	}
 
-	// Normalize e.g. ".m4a" and "m4a"
-	c.YTDLWriteExt = strings.TrimLeft(c.YTDLWriteExt, ".")
-
-	if len(c.Podcasts) == 0 {
-		return nil, errors.New("no podcasts are defined")
-	}
-
-	var podcastShortNameSet set.Strings
 	for i := range c.Podcasts {
 		// Parse Epoch
 		var t time.Time
@@ -123,16 +98,44 @@ func loadConfig(path string) (c *config, err error) {
 			return nil, err
 		}
 		c.Podcasts[i].TitleFilter = re
-
-		// Check for podcast shortname (in effect primary key) collisions.
-		sn := c.Podcasts[i].ShortName
-		// TODO: Check that shortname is not empty string either
-		if podcastShortNameSet.Contains(sn) {
-			return nil, fmt.Errorf(
-				"multiple podcasts using shortname \"%s\"", sn)
-		}
-		podcastShortNameSet.Add(sn)
 	}
 
 	return c, err
+}
+
+func initValidator() *validator.Validate {
+	validate := validator.New()
+
+	epochDateRE := regexp.MustCompile(`^(\d{4}-\d{2}-\d{2})?$`)
+	validate.RegisterValidation("epochformat", func(fl validator.FieldLevel) bool {
+		return epochDateRE.MatchString(fl.Field().String())
+	})
+
+	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
+
+	validate.RegisterStructValidation(func(sl validator.StructLevel) {
+		c := sl.Current().Interface().(config)
+		var podcastShortNameSet set.Strings
+		for i := range c.Podcasts {
+			sn := c.Podcasts[i].ShortName
+			if podcastShortNameSet.Contains(sn) {
+				sl.ReportError(
+					c.Podcasts,
+					fmt.Sprintf("podcasts[%d].short_name", i),
+					"",
+					fmt.Sprintf("Multiple podcasts are using the same %q short_name", sn),
+					"")
+				continue
+			}
+			podcastShortNameSet.Add(sn)
+		}
+	}, config{})
+
+	return validate
 }
