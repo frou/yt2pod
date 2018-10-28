@@ -127,9 +127,9 @@ func initValidator() *validator.Validate {
 			if podcastShortNameSet.Contains(sn) {
 				sl.ReportError(
 					c.Podcasts,
-					fmt.Sprintf("Podcasts[%d].ShortName", i),
+					fmt.Sprintf("podcasts[%d].short_name", i),
 					"",
-					fmt.Sprintf("Multiple podcasts are using the same short name %q", sn),
+					fmt.Sprintf("Multiple podcasts are using the same %q short_name", sn),
 					"")
 				continue
 			}
