@@ -42,7 +42,7 @@ type podcast struct {
 	TitleFilterStr string `json:"title_filter" validate:"-"`
 	TitleFilter    *regexp.Regexp
 
-	EpochStr string `json:"epoch"`
+	EpochStr string `json:"epoch" validate:"epochformat"`
 	Epoch    time.Time
 
 	Vidya           bool   `json:"vidya" validate:"-"`
@@ -106,8 +106,8 @@ func loadConfig(path string) (c *config, err error) {
 func initValidator() *validator.Validate {
 	validate := validator.New()
 
-	epochDateRE := regexp.MustCompile(`^([[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2})?$`)
-	validate.RegisterValidation("epochdate", func(fl validator.FieldLevel) bool {
+	epochDateRE := regexp.MustCompile(`^(\d{4}-\d{2}-\d{2})?$`)
+	validate.RegisterValidation("epochformat", func(fl validator.FieldLevel) bool {
 		return epochDateRE.MatchString(fl.Field().String())
 	})
 
