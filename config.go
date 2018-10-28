@@ -73,36 +73,7 @@ func loadConfig(path string) (c *config, err error) {
 	if err := json.Unmarshal(buf, c); err != nil {
 		return nil, err
 	}
-
-	validate := validator.New()
-	epochDateRE := regexp.MustCompile(`^([[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2})?$`)
-	validate.RegisterValidation("epochdate", func(fl validator.FieldLevel) bool {
-		return epochDateRE.MatchString(fl.Field().String())
-	})
-	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
-		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-		if name == "-" {
-			return ""
-		}
-		return name
-	})
-	validate.RegisterStructValidation(func(sl validator.StructLevel) {
-		c := sl.Current().Interface().(config)
-		var podcastShortNameSet set.Strings
-		for i := range c.Podcasts {
-			sn := c.Podcasts[i].ShortName
-			if podcastShortNameSet.Contains(sn) {
-				sl.ReportError(
-					c.Podcasts,
-					fmt.Sprintf("Podcasts[%d].ShortName", i),
-					"",
-					fmt.Sprintf("Multiple podcasts are using the same short name %q", sn),
-					"")
-				continue
-			}
-			podcastShortNameSet.Add(sn)
-		}
-	}, config{})
+	validate := initValidator()
 	if err := validate.Struct(c); err != nil {
 		return nil, err
 	}
@@ -130,4 +101,41 @@ func loadConfig(path string) (c *config, err error) {
 	}
 
 	return c, err
+}
+
+func initValidator() *validator.Validate {
+	validate := validator.New()
+
+	epochDateRE := regexp.MustCompile(`^([[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2})?$`)
+	validate.RegisterValidation("epochdate", func(fl validator.FieldLevel) bool {
+		return epochDateRE.MatchString(fl.Field().String())
+	})
+
+	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
+
+	validate.RegisterStructValidation(func(sl validator.StructLevel) {
+		c := sl.Current().Interface().(config)
+		var podcastShortNameSet set.Strings
+		for i := range c.Podcasts {
+			sn := c.Podcasts[i].ShortName
+			if podcastShortNameSet.Contains(sn) {
+				sl.ReportError(
+					c.Podcasts,
+					fmt.Sprintf("Podcasts[%d].ShortName", i),
+					"",
+					fmt.Sprintf("Multiple podcasts are using the same short name %q", sn),
+					"")
+				continue
+			}
+			podcastShortNameSet.Add(sn)
+		}
+	}, config{})
+
+	return validate
 }
