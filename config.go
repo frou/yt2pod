@@ -15,7 +15,7 @@ import (
 type config struct {
 	// High-level
 	YTDataAPIKey           string    `json:"yt_data_api_key"          validate:"nonzero"`
-	Podcasts               []podcast `json:"podcasts"                 validate:""`
+	Podcasts               []podcast `json:"podcasts"                 validate:"nonzero"`
 	ServeHost              string    `json:"serve_host"               validate:"nonzero"`
 	ServePort              int       `json:"serve_port"               validate:"min=1,max=65535"`
 	ServeDirectoryListings bool      `json:"serve_directory_listings" validate:""`
