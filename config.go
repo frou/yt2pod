@@ -21,30 +21,30 @@ type config struct {
 	ServeDirectoryListings bool      `json:"serve_directory_listings" valid:"-"`
 
 	// Watcher-related
-	CheckIntervalMinutes int    `json:"check_interval_minutes"`
-	YTDLFmtSelector      string `json:"ytdl_fmt_selector"`
-	YTDLWriteExt         string `json:"ytdl_write_ext"`
+	CheckIntervalMinutes int    `json:"check_interval_minutes" valid:"range(1|99999999999)"`
+	YTDLFmtSelector      string `json:"ytdl_fmt_selector"      valid:"required"`
+	YTDLWriteExt         string `json:"ytdl_write_ext"         valid:"alphanum"`
 }
 
 // ------------------------------------------------------------
 
 type podcast struct {
-	YTChannel             string `json:"yt_channel"`
+	YTChannel             string `json:"yt_channel" valid:"required"`
 	YTChannelID           string
 	YTChannelReadableName string
 
-	Name        string `json:"name"`
-	ShortName   string `json:"short_name"`
-	Description string `json:"description"`
+	Name        string `json:"name"        valid:"required"`
+	ShortName   string `json:"short_name"  valid:"required"`
+	Description string `json:"description" valid:"-"`
 
-	TitleFilterStr string `json:"title_filter"`
+	TitleFilterStr string `json:"title_filter" valid:"-"`
 	TitleFilter    *regexp.Regexp
 
-	EpochStr string `json:"epoch"`
+	EpochStr string `json:"epoch" valid:"matches(^([[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2})$)"`
 	Epoch    time.Time
 
-	Vidya           bool   `json:"vidya"`
-	CustomImagePath string `json:"custom_image"`
+	Vidya           bool   `json:"vidya"        valid:"-"`
+	CustomImagePath string `json:"custom_image" valid:"-"`
 }
 
 func (p *podcast) feedPath() string {
