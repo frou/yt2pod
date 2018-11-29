@@ -192,7 +192,12 @@ func (w *watcher) buildURL(filePath string) string {
 	if w.cfg.ServePort != 80 {
 		portPart = fmt.Sprintf(":%d", w.cfg.ServePort)
 	}
+
+       if w.cfg.ServeUri != "" {
+	return fmt.Sprintf("%s/%s", w.cfg.ServeUri, filePath)
+       } else {
 	return fmt.Sprintf("http://%s%s/%s", w.cfg.ServeHost, portPart, filePath)
+        }
 }
 
 func (w *watcher) writeFeed() error {
