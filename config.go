@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/frou/poor-mans-generics/set"
-	"gopkg.in/go-playground/validator.v9"
+	"github.com/go-playground/validator"
 )
 
 type config struct {
