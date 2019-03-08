@@ -60,6 +60,8 @@ podcast is based on will be used.
 feed's file name and logging. For example, for podcast with a `name` of `"This
 Week In Bikeshedding"`, use a `short_name` like `"twib"`.
 
+If you do not wish to expose the built-in webserver directly on the internet, you may set the `link_proxy` top-level key in the config file (e.g. `"link_proxy": "https://example.com",`). This will cause the download links in the podcast feed to be prefixed with that URI scheme & host, instead of `http://` and the host yt2pod itself is listening on.
+
 ## Command-line Flags
 
 In addition to the config file, there are a handful of command-line flags:
