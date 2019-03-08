@@ -19,6 +19,7 @@ type config struct {
 	YTDataAPIKey           string    `json:"yt_data_api_key"          validate:"required"`
 	Podcasts               []podcast `json:"podcasts"                 validate:"required,dive"`
 	ServeHost              string    `json:"serve_host"               validate:"hostname"`
+	LinkProxy               string    `json:"link_proxy"               validate:"uri"`
 	ServePort              int       `json:"serve_port"               validate:"min=1,max=65535"`
 	ServeDirectoryListings bool      `json:"serve_directory_listings" validate:"-"`
 
