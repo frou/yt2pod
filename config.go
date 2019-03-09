@@ -21,7 +21,7 @@ type config struct {
 	ServeHost              string    `json:"serve_host"               validate:"hostname"`
 	ServePort              int       `json:"serve_port"               validate:"min=1,max=65535"`
 	ServeDirectoryListings bool      `json:"serve_directory_listings" validate:"-"`
-	LinkProxy              string    `json:"link_proxy"               validate:"uri"`
+	LinkProxy              string    `json:"link_proxy"               validate:"omitempty,uri"`
 
 	// Watcher-related
 	CheckIntervalMinutes int    `json:"check_interval_minutes" validate:"min=1"`
