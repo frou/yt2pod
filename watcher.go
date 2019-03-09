@@ -194,7 +194,7 @@ func (w *watcher) buildURL(filePath string) string {
 	}
 
 	if w.cfg.LinkProxy != "" {
-		return fmt.Sprintf("%s/%s", w.cfg.LinkProxy, filePath)
+		return fmt.Sprintf("%s/%s", strings.TrimSuffix(w.cfg.LinkProxy, "/"), filePath)
 	} else {
 		return fmt.Sprintf("http://%s%s/%s", w.cfg.ServeHost, portPart, filePath)
 	}
