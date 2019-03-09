@@ -16,7 +16,8 @@
 
             "yt_channel": "UCeR0n8d3ShTn_yrMhpwyE1Q",
             "title_filter": "VORW",
-            "epoch": "2017-12-25"
+
+            "epoch": "2018-12-25"
         },
         {
             "name": "Yegor256 Webinars",
@@ -24,7 +25,9 @@
             "description": "OOP Extremism",
 
             "yt_channel": "UCr9qCdqXLm2SU0BIs6d_68Q",
-            "title_filter": "Webinar"
+            "title_filter": "Webinar",
+
+            "epoch": "2018-11-03"
         }
     ]
 }
