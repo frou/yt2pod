@@ -1,3 +1,3 @@
-package platform
+package xplatform
 
 func RegisterStalenessResetter(f func()) {}

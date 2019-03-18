@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/frou/stdext"
-	"github.com/frou/yt2pod/internal/platform"
+	"github.com/frou/yt2pod/internal/xplatform"
 )
 
 func setup() (*config, error) {
@@ -35,7 +35,7 @@ func setup() (*config, error) {
 	)
 	if *useSyslog {
 		executableName := filepath.Base(os.Args[0])
-		w, err = platform.NewSyslog(executableName)
+		w, err = xplatform.NewSyslog(executableName)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +93,7 @@ func setup() (*config, error) {
 		}
 	}
 
-	platform.RegisterStalenessResetter(func() {
+	xplatform.RegisterStalenessResetter(func() {
 		lastTimeAnyFeedWritten.Set(time.Now())
 		log.Print("The clock for stale feeds was reset")
 	})

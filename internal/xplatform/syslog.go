@@ -1,6 +1,6 @@
 // +build !windows,!darwin
 
-package platform
+package xplatform
 
 import (
 	"io"

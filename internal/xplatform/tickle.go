@@ -1,6 +1,6 @@
 // +build !windows
 
-package platform
+package xplatform
 
 import (
 	"syscall"
