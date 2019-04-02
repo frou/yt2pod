@@ -5,3 +5,5 @@ os:
   - linux
   - osx
   - windows
+
+# TODO: Run golangci-lint via Travis
