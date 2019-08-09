@@ -40,10 +40,10 @@ var healthConcerns = map[string]healthFunc{
 }
 
 const (
-	// TODO: Make these optionally configurable in the config file.
+	// @todo #0 Make diskLowThreshold & ytdlOldThreshold customizable in the config file.
 	diskLowThreshold = 1024 * 1024 * 1024  // 1GB
 	ytdlOldThreshold = time.Hour * 24 * 60 // 60 days
-	// TODO: Make this optionally configurable per-podcast in the config file.
+	// @todo #0 Make feedsStaleThreshold customizable per-podcast in the config file.
 	feedsStaleThreshold = time.Hour * 24 * 10 // 10 days
 )
 
@@ -81,15 +81,13 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 type healthFunc func() (bool, error)
 
 func diskLow() (bool, error) {
-	// TODO(DH): Pass the global `dataPath` as the path to check?
 	ok := du.NewDiskUsage(".").Available() < diskLowThreshold
 	return ok, nil
 }
 
 func ytdlOld() (bool, error) {
-	// TODO: Cache this for ... minutes because otherwise requesting /health
-	// could be a DoS because every request forks a process that takes ~2s to
-	// run.
+	// @todo #0 Cache ytdl version output for a while to prevent reqs to /health causing DoS.
+	//  Because each request currently forks the ytdl process that takes ~2s to run.
 	version, err := exec.Command(downloadCmdName, "--version").Output()
 	if err != nil {
 		return false, err

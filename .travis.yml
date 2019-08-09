@@ -6,4 +6,4 @@ os:
   - osx
   - windows
 
-# TODO: Run golangci-lint via Travis
+# @todo #0 Run golangci-lint via Travis

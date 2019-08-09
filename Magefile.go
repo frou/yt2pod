@@ -10,6 +10,8 @@ import (
 	"github.com/magefile/mage/sh"
 )
 
+// @todo #0 Get rid of mage and write a bash script ./task that takes an argument
+
 var Default = StampedBuild
 
 func GitRepoIsClean() error {
