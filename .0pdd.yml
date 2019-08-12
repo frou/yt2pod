@@ -6,4 +6,5 @@ format:
 alerts:
   suppress:
     - on-found-puzzle
+    - on-lost-puzzle
     - on-scope
