@@ -344,6 +344,12 @@ var ytChannelIDFormat = regexp.MustCompile("UC[[:alnum:]_-]{22}")
 
 func (w *watcher) getChannelInfo() error {
 	apiReq := w.ytAPI.Channels.List("id,snippet").MaxResults(1)
+
+	// @todo #0 In case a full channel URL, rather than just a channel ID or Username, has been
+	//  pasted into "yt_channel" in the config file, trim off all the URL prefix preceding the
+	//  token we're interested in. (That prefix is already used in code [grep for feedBuilder]
+	//  so extract that as a named constant)
+
 	// Work out whether yt_channel specified in config is an ID or Username and
 	// modify the API request accordingly.
 	if ytChannelIDFormat.MatchString(w.pod.YTChannel) {
