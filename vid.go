@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"path/filepath"
 	"time"
 )
@@ -11,6 +12,15 @@ type ytVidInfo struct {
 	published time.Time
 	title     string
 	desc      string
+}
+
+func makeYtVidInfo(id string, published time.Time, title, desc string) ytVidInfo {
+	return ytVidInfo{
+		id:        id,
+		published: published,
+		title:     html.UnescapeString(title),
+		desc:      html.UnescapeString(desc),
+	}
 }
 
 func (vi *ytVidInfo) episodePath(fileExt string) string {

@@ -328,13 +328,9 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 			if err != nil {
 				return nil, err
 			}
-			vi := ytVidInfo{
-				id:        item.Id.VideoId,
-				published: pubd,
-				title:     item.Snippet.Title,
-				desc:      item.Snippet.Description,
-			}
-			latestVids = append(latestVids, vi)
+			latestVids = append(
+				latestVids,
+				makeYtVidInfo(item.Id.VideoId, pubd, item.Snippet.Title, item.Snippet.Description))
 		}
 		nextPageToken = apiResp.NextPageToken
 		if nextPageToken == "" {
