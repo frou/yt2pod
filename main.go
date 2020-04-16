@@ -103,6 +103,11 @@ func run(cfg *config) error {
 		ReadTimeout: websrvClientReadTimout,
 	}
 	err := websrv.ListenAndServe()
+	// @todo #0 When listening on cfg.ServeHost fails and an alternative address is listened
+	//  on, cfg.ServeHost should not be used in watcher#buildURL.
+	//  How about instead of automatically falling back to trying to listen on all
+	//  interfaces, add a serve_host_fallback:"localhost" to config? Then if
+	//  neither serve_host or serve_host_fallback work, it's a fatal error.
 	if err != nil {
 		samePortAllInterfaces := fmt.Sprint(":", cfg.ServePort)
 		log.Printf("Web server could not listen on %v, trying %v instead",
