@@ -364,7 +364,7 @@ func (w *watcher) getChannelInfo() error {
 
 	switch len(apiResp.Items) {
 	case 0:
-		return errors.New("not a channel id: " + w.pod.YTChannelID)
+		return errors.New("could not find channel: " + w.pod.YTChannel)
 	case 1:
 		if apiResp.Items[0].Kind == "youtube#channel" {
 			break
