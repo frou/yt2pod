@@ -16,10 +16,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/frou/stdext"
 	"github.com/jbub/podcasts"
 	"github.com/nfnt/resize"
 	"google.golang.org/api/youtube/v3"
+
+	"github.com/frou/stdext"
+)
+
+const (
+	youtubeHomeUrl          = "https://www.youtube.com"
+	youtubeChannelUrlPrefix = youtubeHomeUrl + "/channel/"
 )
 
 type watcher struct {
@@ -224,7 +230,7 @@ func (w *watcher) writeFeed() error {
 	// Use the podcasts package to construct the XML for the file.
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.pod.Name,
-		Link:        "https://www.youtube.com/channel/" + w.pod.YTChannelID,
+		Link:        youtubeChannelUrlPrefix + w.pod.YTChannelID,
 		Copyright:   w.pod.YTChannelReadableName,
 		Language:    "en",
 		Description: feedDesc.String(),
@@ -249,9 +255,11 @@ func (w *watcher) writeFeed() error {
 		epSize := info.Size()
 		epURL := w.buildURL(diskPath)
 		epSummary := &podcasts.ItunesSummary{Value: fmt.Sprintf(
-			`%s // <a href="https://www.youtube.com/watch?v=%s">`+
-				`Link to original YouTube video</a>`,
-			vi.desc, vi.id)}
+			`%s // <a href="%s/watch?v=%s">Link to original YouTube video</a>`,
+			vi.desc,
+			youtubeHomeUrl,
+			vi.id),
+		}
 
 		enclosureType := "audio"
 		if w.pod.Vidya {
@@ -345,13 +353,12 @@ var ytChannelIDFormat = regexp.MustCompile("UC[[:alnum:]_-]{22}")
 func (w *watcher) getChannelInfo() error {
 	apiReq := w.ytAPI.Channels.List("id,snippet").MaxResults(1)
 
-	// @todo #0 In case a full channel URL, rather than just a channel ID or Username, has been
-	//  pasted into "yt_channel" in the config file, trim off all the URL prefix preceding the
-	//  token we're interested in. (That prefix is already used in code [grep for feedBuilder]
-	//  so extract that as a named constant)
+	// In case a full channel URL (rather than just the channel ID or Username
+	// alone) was specified in the config file, trim off the redundant part.
+	w.pod.YTChannel = strings.TrimPrefix(w.pod.YTChannel, youtubeChannelUrlPrefix)
 
-	// Work out whether yt_channel specified in config is an ID or Username and
-	// modify the API request accordingly.
+	// Work out whether what was specified in the config file is a channel ID or
+	// Username and modify the API request accordingly.
 	if ytChannelIDFormat.MatchString(w.pod.YTChannel) {
 		apiReq = apiReq.Id(w.pod.YTChannel)
 	} else {
