@@ -114,7 +114,7 @@ With the [Go toolchain](https://golang.org/dl/) installed, the following command
 
 `go get github.com/frou/yt2pod`
 
-The `yt2pod` binary should now be built and located in `$GOPATH/bin`
+The `yt2pod` binary should now be built and located in `~/go/bin` (or in `$GOPATH/bin` if your machine has a custom `GOPATH` defined).
 
 🚨 The `yt2pod` binary calls out to the [youtube-dl][ytdl] command at runtime. You should make sure you have `youtube-dl` installed (it is available in all good package managers).
 
