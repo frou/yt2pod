@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/frou/yt2pod.svg?branch=master)](https://travis-ci.org/frou/yt2pod)
 [![GoDoc](https://godoc.org/github.com/frou/yt2pod?status.svg)](https://godoc.org/github.com/frou/yt2pod)
-[![PDD status](http://www.0pdd.com/svg?name=frou/yt2pod)](http://www.0pdd.com/p?name=frou/yt2pod)
 
 [yt2pod] is a daemon that monitors YouTube channels and publishes audio
 podcasts of them.
