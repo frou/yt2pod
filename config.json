@@ -5,6 +5,9 @@
     "ytdl_fmt_selector": "140/141",
     "ytdl_write_ext": "m4a",
 
+    "ytdl_video_fmt_selector": "22/18",
+    "ytdl_video_write_ext": "mp4",
+
     "serve_host": "podcasts.example.com",
     "serve_port": 8120,
     "serve_directory_listings": true,
