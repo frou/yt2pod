@@ -1,5 +1,5 @@
 {
-    "yt_data_api_key": "AIzaSyCE5hIPdIYkYPV9CRxJMjTgMd4NJJw_bvI",
+    "yt_data_api_key": "",
     "check_interval_minutes": 15,
 
     "ytdl_fmt_selector": "140/141",
@@ -17,20 +17,19 @@
             "name": "VORW: The Voice of TheReportOfTheWeek",
             "short_name": "vorw",
 
-            "yt_channel": "UCeR0n8d3ShTn_yrMhpwyE1Q",
-            "title_filter": "VORW",
+            "yt_channel": "VORWPodcast",
 
-            "epoch": "2018-12-25"
+            "epoch": "2021-01-01"
         },
         {
             "name": "Yegor256 Webinars",
             "short_name": "yegor256",
-            "description": "OOP Extremism",
+            "description": "OOP Fanatic",
 
             "yt_channel": "UCr9qCdqXLm2SU0BIs6d_68Q",
             "title_filter": "Webinar",
 
-            "epoch": "2018-11-03"
+            "epoch": "2020-12-01"
         }
     ]
 }

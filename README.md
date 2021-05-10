@@ -86,8 +86,7 @@ flags:
 
 ## YouTube Data API
 
-YouTube's Data API is used to query information. The [example config
-file][egcfg] contains an API key that you can use, or you can [get your own API key][apikey] and use it instead.
+🚨 YouTube's Data API is used to query information. You need your [own API key][apikey] to be able to use that API and hence `yt2pod`.
 
 ---
 
