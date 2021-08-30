@@ -24,9 +24,11 @@ type config struct {
 	LinkProxy              string    `json:"link_proxy"               validate:"omitempty,uri"`
 
 	// Watcher-related
-	CheckIntervalMinutes int    `json:"check_interval_minutes" validate:"min=1"`
-	YTDLFmtSelector      string `json:"ytdl_fmt_selector"      validate:"required"`
-	YTDLWriteExt         string `json:"ytdl_write_ext"         validate:"alphanum"`
+	CheckIntervalMinutes int    `json:"check_interval_minutes"  validate:"min=1"`
+	YTDLFmtSelector      string `json:"ytdl_fmt_selector"       validate:"required"`
+	YTDLWriteExt         string `json:"ytdl_write_ext"          validate:"alphanum"`
+	YTDLVideoFmtSelector string `json:"ytdl_video_fmt_selector" validate:"required"`
+	YTDLVideoWriteExt    string `json:"ytdl_video_write_ext"    validate:"alphanum"`
 }
 
 // ------------------------------------------------------------
