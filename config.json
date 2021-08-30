@@ -11,22 +11,22 @@
 
     "podcasts": [
         {
-            "name": "VORW: The Voice of TheReportOfTheWeek",
-            "short_name": "vorw",
+            "name": "PLA Prank Calls",
+            "short_name": "pla",
+            "description": "Single-serve calls",
 
-            "yt_channel": "VORWPodcast",
+            "yt_channel": "PhoneLosersofAmerica",
 
-            "epoch": "2021-01-01"
+            "epoch": "2021-06-15"
         },
         {
-            "name": "Yegor256 Webinars",
-            "short_name": "yegor256",
-            "description": "OOP Fanatic",
+            "name": "Maru",
+            "short_name": "maru",
 
-            "yt_channel": "UCr9qCdqXLm2SU0BIs6d_68Q",
-            "title_filter": "Webinar",
+            "yt_channel": "UCRVruzlQF5cqpw9jQgIgNdw",
+            "title_filter": "swing",
 
-            "epoch": "2020-12-01"
+            "vidya": true
         }
     ]
 }
