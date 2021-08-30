@@ -48,7 +48,7 @@ type podcast struct {
 	EpochStr string `json:"epoch" validate:"epochformat"`
 	Epoch    time.Time
 
-	Vidya           bool   `json:"vidya" validate:"-"`
+	Video           bool   `json:"video" validate:"-"`
 	CustomImagePath string `json:"custom_image" validate:"-"`
 }
 

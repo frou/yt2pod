@@ -163,7 +163,7 @@ func (w *watcher) processLatest(latestVids []ytVidInfo) {
 }
 
 func (w *watcher) formatSelector() string {
-	if w.pod.Vidya {
+	if w.pod.Video {
 		return w.cfg.YTDLVideoFmtSelector
 	} else {
 		return w.cfg.YTDLFmtSelector
@@ -171,7 +171,7 @@ func (w *watcher) formatSelector() string {
 }
 
 func (w *watcher) fileExtension() string {
-	if w.pod.Vidya {
+	if w.pod.Video {
 		return w.cfg.YTDLVideoWriteExt
 	} else {
 		return w.cfg.YTDLWriteExt
@@ -271,7 +271,7 @@ func (w *watcher) writeFeed() error {
 		}
 
 		enclosureType := "audio"
-		if w.pod.Vidya {
+		if w.pod.Video {
 			enclosureType = "video"
 		}
 		enclosureType = fmt.Sprint(enclosureType, "/", w.fileExtension())
