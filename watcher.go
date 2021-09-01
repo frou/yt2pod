@@ -228,11 +228,11 @@ func (w *watcher) writeFeed() error {
 
 	// Use the podcasts package to construct the XML for the file.
 	var homeLink string
-	switch w.pod.YTChannelIdentifierFormat {
+	switch w.pod.YTChannelHandleFormat {
 	case LegacyUsername:
-		homeLink = youtubeUserUrlPrefix + w.pod.YTChannelIdentifier
+		homeLink = youtubeUserUrlPrefix + w.pod.YTChannelHandle
 	case ChannelID:
-		homeLink = youtubeChannelUrlPrefix + w.pod.YTChannelIdentifier
+		homeLink = youtubeChannelUrlPrefix + w.pod.YTChannelHandle
 	}
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.pod.Name,
@@ -359,11 +359,11 @@ var ytChannelIDFormat = regexp.MustCompile("UC[[:alnum:]_-]{22}")
 func (w *watcher) getChannelInfo() error {
 	apiReq := w.ytAPI.Channels.List("id,snippet").MaxResults(1)
 
-	switch w.pod.YTChannelIdentifierFormat {
+	switch w.pod.YTChannelHandleFormat {
 	case LegacyUsername:
-		apiReq = apiReq.ForUsername(w.pod.YTChannelIdentifier)
+		apiReq = apiReq.ForUsername(w.pod.YTChannelHandle)
 	case ChannelID:
-		apiReq = apiReq.Id(w.pod.YTChannelIdentifier)
+		apiReq = apiReq.Id(w.pod.YTChannelHandle)
 	}
 
 	var channel *youtube.Channel
@@ -373,7 +373,7 @@ func (w *watcher) getChannelInfo() error {
 	} else {
 		switch n := len(apiResp.Items); n {
 		case 0:
-			return fmt.Errorf("%s: could not find channel for %q", w.pod, w.pod.YTChannelIdentifier)
+			return fmt.Errorf("%s: could not find channel for %q", w.pod, w.pod.YTChannelHandle)
 		case 1:
 			if item := apiResp.Items[0]; item.Kind == "youtube#channel" {
 				channel = item
@@ -392,15 +392,15 @@ func (w *watcher) getChannelInfo() error {
 
 		w.pod.YTChannelReadableName = channel.Snippet.Title
 	} else {
-		if w.pod.YTChannelIdentifierFormat != ChannelID {
+		if w.pod.YTChannelHandleFormat != ChannelID {
 			return fmt.Errorf(
 				"%s: Cannot continue when unable to discover the Channel-ID for %q using the YT API. HINT: In the config file, write the channel's ID (\"UC...\") instead of %[2]q",
-				w.pod, w.pod.YTChannelIdentifier)
+				w.pod, w.pod.YTChannelHandle)
 
 		}
-		w.pod.YTChannelID = w.pod.YTChannelIdentifier
-		log.Printf("%s: Unable to discover channel's readable name using the YT API, so using the identifier from the config file", w.pod)
-		w.pod.YTChannelReadableName = w.pod.YTChannelIdentifier
+		w.pod.YTChannelID = w.pod.YTChannelHandle
+		log.Printf("%s: Unable to discover channel's readable name using the YT API, so using the handle from the config file", w.pod)
+		w.pod.YTChannelReadableName = w.pod.YTChannelHandle
 	}
 
 	chImg, err := w.getChannelImage(channel)
