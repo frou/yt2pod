@@ -99,6 +99,10 @@ func loadConfig(path string) (c *config, err error) {
 			return nil, err
 		}
 		c.Podcasts[i].TitleFilter = re
+		// @todo Detect whether the TitleFilter is entirely a literal pattern
+		// @body ...in which case the title-based filtering can be done server-side using the `q` param: https://developers.google.com/youtube/v3/docs/search/list#q
+		// @body and this will save API calls vs. fetching all result pages and doing the title filtering client-side.
+		// @body Use https://pkg.go.dev/regexp#Regexp.LiteralPrefix ?
 	}
 
 	return c, err
