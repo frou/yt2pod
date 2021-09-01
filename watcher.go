@@ -373,7 +373,7 @@ func (w *watcher) getChannelInfo() error {
 	} else {
 		switch n := len(apiResp.Items); n {
 		case 0:
-			return fmt.Errorf("%s: could not find channel for %q", w.pod, w.pod.YTChannelHandle)
+			return fmt.Errorf("%s: could not find a channel by using the handle %q", w.pod, w.pod.YTChannelHandle)
 		case 1:
 			if item := apiResp.Items[0]; item.Kind == "youtube#channel" {
 				channel = item
@@ -381,25 +381,25 @@ func (w *watcher) getChannelInfo() error {
 				return fmt.Errorf("%s: unexpected Kind %q in initial channel info", w.pod, item.Kind)
 			}
 		default:
-			return fmt.Errorf("%s: expected exactly 1 channel in response items, got %d", w.pod, n)
+			return fmt.Errorf("%s: expected exactly 1 item in initial channel info response, got %d", w.pod, n)
 		}
 	}
 
 	if channel != nil {
-		// We now know the channel's ID regardless of whether it was in the config
-		// file (there might have only been a username in there).
+		// We have now been made aware of the channel's ChannelID regardless of
+		// what format of handle was specified in the config file.
 		w.pod.YTChannelID = channel.Id
 
 		w.pod.YTChannelReadableName = channel.Snippet.Title
 	} else {
-		if w.pod.YTChannelHandleFormat != ChannelID {
+		if w.pod.YTChannelHandleFormat == ChannelID {
+			w.pod.YTChannelID = w.pod.YTChannelHandle
+		} else {
 			return fmt.Errorf(
-				"%s: Cannot continue when unable to discover the Channel-ID for %q using the YT API. HINT: In the config file, write the channel's ID (\"UC...\") instead of %[2]q",
+				"%s: Cannot continue due to being unable to discover the ChannelID for %q using the YT API. HINT: In the config file, writing the channel's ID (\"UC...\") directly instead of %[2]q will resolve this",
 				w.pod, w.pod.YTChannelHandle)
-
 		}
-		w.pod.YTChannelID = w.pod.YTChannelHandle
-		log.Printf("%s: Unable to discover channel's readable name using the YT API, so using the handle from the config file", w.pod)
+		log.Printf("%s: Unable to discover channel's readable name using the YT API, so making do with the handle from the config file", w.pod)
 		w.pod.YTChannelReadableName = w.pod.YTChannelHandle
 	}
 
@@ -453,6 +453,7 @@ func (w *watcher) getChannelImage(channel *youtube.Channel) (image.Image, error)
 		return img, nil
 	} else {
 		if channel == nil {
+			log.Printf("%s: Unable to discover channel's image using the YT API, so making do with placeholder art", w.pod)
 			return png.Decode(bytes.NewReader(placeholderArtPNG))
 		}
 
