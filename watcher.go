@@ -59,13 +59,6 @@ func newWatcher(
 		cleanc:       cleanc,
 	}
 
-	// Make a video podcast (720p or 360p) instead of a normal audio podcast.
-	// This is undocumented for now.
-	if w.pod.Vidya {
-		w.cfg.YTDLFmtSelector = "22/18"
-		w.cfg.YTDLWriteExt = "mp4"
-	}
-
 	// Up front, check that the YouTube API is working. Do this by fetching the
 	// name of the channel and its 'avatar' image (both made use of later).
 	err := w.getChannelInfo()
@@ -168,14 +161,30 @@ func (w *watcher) processLatest(latestVids []ytVidInfo) {
 	}
 }
 
+func (w *watcher) formatSelector() string {
+	if w.pod.Video {
+		return w.cfg.YTDLVideoFmtSelector
+	} else {
+		return w.cfg.YTDLFmtSelector
+	}
+}
+
+func (w *watcher) fileExtension() string {
+	if w.pod.Video {
+		return w.cfg.YTDLVideoWriteExt
+	} else {
+		return w.cfg.YTDLWriteExt
+	}
+}
+
 func (w *watcher) download(vi ytVidInfo, firstTry bool) error {
-	diskPath := vi.episodePath(w.cfg.YTDLWriteExt)
+	diskPath := vi.episodePath(w.fileExtension())
 	if _, err := os.Stat(diskPath); err == nil {
 		return nil
 	}
 
 	cmdLine := fmt.Sprintf("%s -f %s -o %s --socket-timeout 30 -- %s",
-		downloadCmdName, w.cfg.YTDLFmtSelector, diskPath, vi.id)
+		downloadCmdName, w.formatSelector(), diskPath, vi.id)
 	if firstTry {
 		log.Printf("%s: Download intent: %s", w.pod, cmdLine)
 	}
@@ -246,7 +255,7 @@ func (w *watcher) writeFeed() error {
 	sort.Sort(sort.Reverse(vidsChronoSorter(w.vids)))
 
 	for _, vi := range w.vids {
-		diskPath := vi.episodePath(w.cfg.YTDLWriteExt)
+		diskPath := vi.episodePath(w.fileExtension())
 		f, err := os.Open(diskPath)
 		if err != nil {
 			log.Print(err)
@@ -268,10 +277,10 @@ func (w *watcher) writeFeed() error {
 		}
 
 		enclosureType := "audio"
-		if w.pod.Vidya {
+		if w.pod.Video {
 			enclosureType = "video"
 		}
-		enclosureType = fmt.Sprint(enclosureType, "/", w.cfg.YTDLWriteExt)
+		enclosureType = fmt.Sprint(enclosureType, "/", w.fileExtension())
 
 		feedBuilder.AddItem(&podcasts.Item{
 			Title:   vi.title,

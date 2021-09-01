@@ -63,7 +63,7 @@ func (w *watcher) sendCleaningWhitelist(vids []ytVidInfo) {
 	wlist := cleaningWhitelist{cleanFinishedC: make(chan struct{})}
 	for _, vi := range vids {
 		wlist.paths = append(wlist.paths,
-			vi.episodePath(w.cfg.YTDLWriteExt))
+			vi.episodePath(w.fileExtension()))
 	}
 	wlist.paths = append(wlist.paths, w.pod.artPath())
 	wlist.paths = append(wlist.paths, w.pod.feedPath())
