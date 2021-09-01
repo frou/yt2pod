@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	_ "embed"
 	"errors"
 	"fmt"
 	"image"
@@ -23,16 +24,8 @@ import (
 	"github.com/frou/stdext"
 )
 
-const (
-	youtubeHomeUrl = "https://www.youtube.com"
-
-	// REF: https://support.google.com/youtube/answer/6180214
-	youtubeChannelUrlPrefix = youtubeHomeUrl + "/channel/"
-	youtubeUserUrlPrefix    = youtubeHomeUrl + "/user/"
-	// @todo Support "Custom URL" channel identifiers in addition to Channel-IDs and Usernames
-	// youtubeCustomUrlPrefix = youtubeHomeUrl + "/c/"
-
-)
+//go:embed placeholder-art.png
+var placeholderArtPNG []byte
 
 type watcher struct {
 	ytAPI         *youtube.Service
@@ -234,9 +227,16 @@ func (w *watcher) writeFeed() error {
 	}
 
 	// Use the podcasts package to construct the XML for the file.
+	var homeLink string
+	switch w.pod.YTChannelHandleFormat {
+	case LegacyUsername:
+		homeLink = youtubeUserUrlPrefix + w.pod.YTChannelHandle
+	case ChannelID:
+		homeLink = youtubeChannelUrlPrefix + w.pod.YTChannelHandle
+	}
 	feedBuilder := &podcasts.Podcast{
 		Title:       w.pod.Name,
-		Link:        youtubeChannelUrlPrefix + w.pod.YTChannelID,
+		Link:        homeLink,
 		Copyright:   w.pod.YTChannelReadableName,
 		Language:    "en",
 		Description: feedDesc.String(),
@@ -359,78 +359,53 @@ var ytChannelIDFormat = regexp.MustCompile("UC[[:alnum:]_-]{22}")
 func (w *watcher) getChannelInfo() error {
 	apiReq := w.ytAPI.Channels.List("id,snippet").MaxResults(1)
 
-	// In case a full channel URL (rather than just the channel ID or Username
-	// alone) was specified in the config file, trim off the redundant part.
-	w.pod.YTChannel = strings.TrimPrefix(w.pod.YTChannel, youtubeChannelUrlPrefix)
-
-	// Work out whether what was specified in the config file is a channel ID or
-	// Username and modify the API request accordingly.
-	if ytChannelIDFormat.MatchString(w.pod.YTChannel) {
-		apiReq = apiReq.Id(w.pod.YTChannel)
-	} else {
-		apiReq = apiReq.ForUsername(w.pod.YTChannel)
+	switch w.pod.YTChannelHandleFormat {
+	case LegacyUsername:
+		apiReq = apiReq.ForUsername(w.pod.YTChannelHandle)
+	case ChannelID:
+		apiReq = apiReq.Id(w.pod.YTChannelHandle)
 	}
+
+	var channel *youtube.Channel
 	apiResp, err := apiReq.Do()
 	if err != nil {
-		return err
-	}
-
-	switch len(apiResp.Items) {
-	case 0:
-		return errors.New("could not find channel: " + w.pod.YTChannel)
-	case 1:
-		if apiResp.Items[0].Kind == "youtube#channel" {
-			break
-		}
-		fallthrough
-	default:
-		return errors.New("expected exactly 1 channel in response items")
-	}
-	ch := apiResp.Items[0]
-
-	// We now know the channel's ID regardless of whether it was in config.
-	w.pod.YTChannelID = ch.Id
-	w.pod.YTChannelReadableName = ch.Snippet.Title
-
-	var chImg image.Image
-	if w.pod.CustomImagePath == "" {
-		// Get the channel image referenced by the thumbnail field.
-		chImgURL := ch.Snippet.Thumbnails.High.Url
-		chImgResp, err := http.Get(chImgURL)
-		if err != nil {
-			return err
-		}
-		defer chImgResp.Body.Close()
-
-		switch typ := chImgResp.Header.Get("Content-Type"); typ {
-		case "image/jpeg":
-			chImg, err = jpeg.Decode(chImgResp.Body)
-		case "image/png":
-			chImg, err = png.Decode(chImgResp.Body)
-		default:
-			err = fmt.Errorf("%s: channel image: unexpected type: %s",
-				w.pod, typ)
-		}
-		if err != nil {
-			return err
-		}
+		log.Printf("%s: Getting initial channel info failed: %v", w.pod, err)
 	} else {
-		if w.pod.CustomImagePath == w.pod.artPath() {
+		switch n := len(apiResp.Items); n {
+		case 0:
+			return fmt.Errorf("%s: could not find a channel by using the handle %q", w.pod, w.pod.YTChannelHandle)
+		case 1:
+			if item := apiResp.Items[0]; item.Kind == "youtube#channel" {
+				channel = item
+			} else {
+				return fmt.Errorf("%s: unexpected Kind %q in initial channel info", w.pod, item.Kind)
+			}
+		default:
+			return fmt.Errorf("%s: expected exactly 1 item in initial channel info response, got %d", w.pod, n)
+		}
+	}
+
+	if channel != nil {
+		// We have now been made aware of the channel's ChannelID regardless of
+		// what format of handle was specified in the config file.
+		w.pod.YTChannelID = channel.Id
+
+		w.pod.YTChannelReadableName = channel.Snippet.Title
+	} else {
+		if w.pod.YTChannelHandleFormat == ChannelID {
+			w.pod.YTChannelID = w.pod.YTChannelHandle
+		} else {
 			return fmt.Errorf(
-				"%s: custom image path and automatic image path clash "+
-					"(both are: %v)", w.pod, w.pod.CustomImagePath)
+				"%s: Cannot continue due to being unable to discover the ChannelID for %q using the YT API. HINT: In the config file, writing the channel's ID (\"UC...\") directly instead of %[2]q will resolve this",
+				w.pod, w.pod.YTChannelHandle)
 		}
-		f, err := os.Open(w.pod.CustomImagePath)
-		if err != nil {
-			return fmt.Errorf("%s: custom image: %v", w.pod, err)
-		}
-		defer f.Close()
-		chImg, _, err = image.Decode(f)
-		if err != nil {
-			return fmt.Errorf("%s: custom image: %v", w.pod, err)
-		}
-		log.Printf("%s: Using custom image from path %s",
-			w.pod, w.pod.CustomImagePath)
+		log.Printf("%s: Unable to discover channel's readable name using the YT API, so making do with the handle from the config file", w.pod)
+		w.pod.YTChannelReadableName = w.pod.YTChannelHandle
+	}
+
+	chImg, err := w.getChannelImage(channel)
+	if err != nil {
+		return err
 	}
 
 	// Ensure that the dimensions of the image meet the minimum requirements to
@@ -456,4 +431,45 @@ func (w *watcher) getChannelInfo() error {
 	}
 	defer f.Close()
 	return jpeg.Encode(f, chImg, nil)
+}
+
+func (w *watcher) getChannelImage(channel *youtube.Channel) (image.Image, error) {
+	if w.pod.CustomImagePath != "" {
+		if w.pod.CustomImagePath == w.pod.artPath() {
+			return nil, fmt.Errorf(
+				"%s: custom image path and automatic image path clash "+
+					"(both are: %v)", w.pod, w.pod.CustomImagePath)
+		}
+		f, err := os.Open(w.pod.CustomImagePath)
+		if err != nil {
+			return nil, fmt.Errorf("%s: custom image: %v", w.pod, err)
+		}
+		defer f.Close()
+		img, _, err := image.Decode(f)
+		if err != nil {
+			return nil, fmt.Errorf("%s: custom image: %v", w.pod, err)
+		}
+		log.Printf("%s: Using custom image from path %s", w.pod, w.pod.CustomImagePath)
+		return img, nil
+	} else {
+		if channel == nil {
+			log.Printf("%s: Unable to discover channel's image using the YT API, so making do with placeholder art", w.pod)
+			return png.Decode(bytes.NewReader(placeholderArtPNG))
+		}
+
+		imgResp, err := http.Get(channel.Snippet.Thumbnails.High.Url)
+		if err != nil {
+			return nil, err
+		}
+		defer imgResp.Body.Close()
+
+		switch typ := imgResp.Header.Get("Content-Type"); typ {
+		case "image/jpeg":
+			return jpeg.Decode(imgResp.Body)
+		case "image/png":
+			return png.Decode(imgResp.Body)
+		default:
+			return nil, fmt.Errorf("%s: channel image: unexpected type: %s", w.pod, typ)
+		}
+	}
 }

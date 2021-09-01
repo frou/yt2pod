@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -32,7 +33,8 @@ type config struct {
 // ------------------------------------------------------------
 
 type podcast struct {
-	YTChannel             string `json:"yt_channel" validate:"required"`
+	YTChannelHandle       string `json:"yt_channel" validate:"required"`
+	YTChannelHandleFormat channelHandleFormat
 	YTChannelID           string
 	YTChannelReadableName string
 
@@ -64,6 +66,26 @@ func (p *podcast) String() string {
 
 // ------------------------------------------------------------
 
+type channelHandleFormat int
+
+// REF: https://support.google.com/youtube/answer/6180214
+const (
+	LegacyUsername channelHandleFormat = iota
+	ChannelID
+	// @todo Support "Custom URL" channel identifiers in addition to Channel-IDs and Usernames
+	// Custom
+)
+
+const (
+	youtubeHomeUrl = "https://www.youtube.com"
+
+	youtubeChannelUrlPrefix = youtubeHomeUrl + "/channel/"
+	youtubeUserUrlPrefix    = youtubeHomeUrl + "/user/"
+	// youtubeCustomUrlPrefix  = youtubeHomeUrl + "/c/"
+)
+
+// ------------------------------------------------------------
+
 func loadConfig(path string) (c *config, err error) {
 	// Load & decode config from disk.
 	buf, err := ioutil.ReadFile(path)
@@ -80,6 +102,22 @@ func loadConfig(path string) (c *config, err error) {
 	}
 
 	for i := range c.Podcasts {
+		handle := c.Podcasts[i].YTChannelHandle
+		switch {
+		case strings.HasPrefix(handle, youtubeUserUrlPrefix):
+			c.Podcasts[i].YTChannelHandle = strings.TrimPrefix(handle, youtubeUserUrlPrefix)
+			c.Podcasts[i].YTChannelHandleFormat = LegacyUsername
+		case strings.HasPrefix(handle, youtubeChannelUrlPrefix) || ytChannelIDFormat.MatchString(handle):
+			c.Podcasts[i].YTChannelHandle = strings.TrimPrefix(handle, youtubeChannelUrlPrefix)
+			c.Podcasts[i].YTChannelHandleFormat = ChannelID
+		// case strings.HasPrefix(handle, youtubeCustomUrlPrefix):
+		// 	c.Podcasts[i].YTChannelHandle = strings.TrimPrefix(handle, youtubeCustomUrlPrefix)
+		// 	c.Podcasts[i].YTChannelHandleFormat = Custom
+		default:
+			log.Printf("Assuming that channel handle %q in config is a legacy YouTube username", handle)
+			c.Podcasts[i].YTChannelHandleFormat = LegacyUsername
+		}
+
 		// Parse Epoch
 		var t time.Time
 		var err error
