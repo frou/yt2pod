@@ -1,6 +1,6 @@
 module github.com/frou/yt2pod
 
-go 1.14
+go 1.16
 
 require (
 	github.com/frou/poor-mans-generics v0.0.0-20181024095521-2ccba2ef9f15

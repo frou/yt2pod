@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -32,9 +33,10 @@ type config struct {
 // ------------------------------------------------------------
 
 type podcast struct {
-	YTChannel             string `json:"yt_channel" validate:"required"`
-	YTChannelID           string
-	YTChannelReadableName string
+	YTChannelIdentifier       string `json:"yt_channel" validate:"required"`
+	YTChannelIdentifierFormat channelIdentifierFormat
+	YTChannelID               string
+	YTChannelReadableName     string
 
 	Name        string `json:"name"        validate:"required"`
 	ShortName   string `json:"short_name"  validate:"required"`
@@ -64,6 +66,26 @@ func (p *podcast) String() string {
 
 // ------------------------------------------------------------
 
+type channelIdentifierFormat int
+
+// REF: https://support.google.com/youtube/answer/6180214
+const (
+	LegacyUsername channelIdentifierFormat = 1 + iota
+	ChannelID
+	// @todo Support "Custom URL" channel identifiers in addition to Channel-IDs and Usernames
+	// Custom
+)
+
+const (
+	youtubeHomeUrl = "https://www.youtube.com"
+
+	youtubeChannelUrlPrefix = youtubeHomeUrl + "/channel/"
+	youtubeUserUrlPrefix    = youtubeHomeUrl + "/user/"
+	// youtubeCustomUrlPrefix  = youtubeHomeUrl + "/c/"
+)
+
+// ------------------------------------------------------------
+
 func loadConfig(path string) (c *config, err error) {
 	// Load & decode config from disk.
 	buf, err := ioutil.ReadFile(path)
@@ -80,6 +102,22 @@ func loadConfig(path string) (c *config, err error) {
 	}
 
 	for i := range c.Podcasts {
+		identifier := c.Podcasts[i].YTChannelIdentifier
+		switch {
+		case strings.HasPrefix(identifier, youtubeUserUrlPrefix):
+			c.Podcasts[i].YTChannelIdentifier = strings.TrimPrefix(identifier, youtubeUserUrlPrefix)
+			c.Podcasts[i].YTChannelIdentifierFormat = LegacyUsername
+		case strings.HasPrefix(identifier, youtubeChannelUrlPrefix) || ytChannelIDFormat.MatchString(identifier):
+			c.Podcasts[i].YTChannelIdentifier = strings.TrimPrefix(identifier, youtubeChannelUrlPrefix)
+			c.Podcasts[i].YTChannelIdentifierFormat = ChannelID
+		// case strings.HasPrefix(identifier, youtubeCustomUrlPrefix):
+		// 	c.Podcasts[i].YTChannelIdentifier = strings.TrimPrefix(identifier, youtubeCustomUrlPrefix)
+		// 	c.Podcasts[i].YTChannelIdentifierFormat = Custom
+		default:
+			log.Printf("Assuming that channel identifier %q in config is a legacy YouTube username", identifier)
+			c.Podcasts[i].YTChannelIdentifierFormat = LegacyUsername
+		}
+
 		// Parse Epoch
 		var t time.Time
 		var err error
