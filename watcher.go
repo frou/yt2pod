@@ -24,8 +24,14 @@ import (
 )
 
 const (
-	youtubeHomeUrl          = "https://www.youtube.com"
+	youtubeHomeUrl = "https://www.youtube.com"
+
+	// REF: https://support.google.com/youtube/answer/6180214
 	youtubeChannelUrlPrefix = youtubeHomeUrl + "/channel/"
+	youtubeUserUrlPrefix    = youtubeHomeUrl + "/user/"
+	// @todo Support "Custom URL" channel identifiers in addition to Channel-IDs and Usernames
+	// youtubeCustomUrlPrefix = youtubeHomeUrl + "/c/"
+
 )
 
 type watcher struct {
