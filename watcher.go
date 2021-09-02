@@ -348,6 +348,9 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 			if item.Id.Kind != "youtube#video" {
 				return nil, errors.New("non-video in response items")
 			}
+			// Even if we requested server-side filtering, that is fuzzy and
+			// often returns false-positives, so we always do client-side
+			// filtering.
 			if !w.pod.TitleFilterRE.MatchString(item.Snippet.Title) {
 				// Not interested in this vid.
 				continue
