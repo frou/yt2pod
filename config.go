@@ -149,7 +149,7 @@ func initValidator() *validator.Validate {
 	validate := validator.New()
 
 	epochDateRE := regexp.MustCompile(`^(\d{4}-\d{2}-\d{2})?$`)
-	validate.RegisterValidation("epochformat", func(fl validator.FieldLevel) bool {
+	_ = validate.RegisterValidation("epochformat", func(fl validator.FieldLevel) bool {
 		return epochDateRE.MatchString(fl.Field().String())
 	})
 
@@ -162,7 +162,7 @@ func initValidator() *validator.Validate {
 	})
 
 	validate.RegisterStructValidation(func(sl validator.StructLevel) {
-		c := sl.Current().Interface().(config)
+		c, _ := sl.Current().Interface().(config)
 		var podcastShortNameSet set.Strings
 		for i := range c.Podcasts {
 			sn := c.Podcasts[i].ShortName
