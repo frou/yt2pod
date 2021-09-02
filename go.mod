@@ -9,7 +9,7 @@ require (
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/jbub/podcasts v0.1.0
 	github.com/magefile/mage v1.11.0
-	github.com/ricochet2200/go-disk-usage/du v0.0.0-20210707232629-ac9918953285
 	github.com/snapas/resize v1.0.0
+	github.com/tzdybal/go-disk-usage v1.0.0
 	google.golang.org/api v0.56.0
 )

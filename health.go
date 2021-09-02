@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/frou/stdext"
-	"github.com/ricochet2200/go-disk-usage/du"
+	"github.com/tzdybal/go-disk-usage/du"
 )
 
 // Define HTTP handlers that an automated monitoring system can access to keep
