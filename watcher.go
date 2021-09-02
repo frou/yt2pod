@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/jbub/podcasts"
-	"github.com/nfnt/resize"
+	"github.com/snapas/resize"
 	"google.golang.org/api/youtube/v3"
 
 	"github.com/frou/stdext"

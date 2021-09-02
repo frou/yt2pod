@@ -11,8 +11,8 @@ require (
 	github.com/jbub/podcasts v0.1.0
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/magefile/mage v1.11.0
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/ricochet2200/go-disk-usage/du v0.0.0-20210707232629-ac9918953285
+	github.com/snapas/resize v1.0.0
 	google.golang.org/api v0.56.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )
