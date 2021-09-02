@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/frou/poor-mans-generics/set"
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 )
 
 type config struct {
