@@ -44,8 +44,9 @@ type podcast struct {
 	ShortName   string `json:"short_name"  validate:"required"`
 	Description string `json:"description" validate:"-"`
 
-	TitleFilterStr string `json:"title_filter" validate:"-"`
-	TitleFilter    *regexp.Regexp
+	TitleFilterStr          string `json:"title_filter" validate:"-"`
+	TitleFilterStrIsLiteral bool
+	TitleFilter             *regexp.Regexp
 
 	EpochStr string `json:"epoch" validate:"epochformat"`
 	Epoch    time.Time
@@ -132,17 +133,13 @@ func loadConfig(path string) (c *config, err error) {
 		c.Podcasts[i].Epoch = t
 
 		// Parse Title Filter
-		re, err := regexp.Compile(
-			// Ensure the re does case-insensitive matching.
-			fmt.Sprintf("(?i:%s)", c.Podcasts[i].TitleFilterStr))
+		re, err := regexp.Compile(c.Podcasts[i].TitleFilterStr)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error in regex specified for title filter: %w", err)
 		}
-		c.Podcasts[i].TitleFilter = re
-		// @todo Detect whether the TitleFilter is entirely a literal pattern
-		// @body ...in which case the title-based filtering can be done server-side using the `q` param: https://developers.google.com/youtube/v3/docs/search/list#q
-		// @body and this will save API calls vs. fetching all result pages and doing the title filtering client-side.
-		// @body Use https://pkg.go.dev/regexp#Regexp.LiteralPrefix ?
+		_, c.Podcasts[i].TitleFilterStrIsLiteral = re.LiteralPrefix()
+		// Force case-insensitive matching.
+		c.Podcasts[i].TitleFilter = regexp.MustCompile(fmt.Sprintf("(?i:%s)", re.String()))
 	}
 
 	return c, err

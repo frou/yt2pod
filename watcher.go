@@ -331,6 +331,13 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 			Order("date").
 			MaxResults(50).
 			PageToken(nextPageToken)
+		if w.pod.TitleFilterStrIsLiteral && w.pod.TitleFilterStr != "" {
+			// When the user-specified title filter is a plain literal
+			// (doesn't use any regex syntax) then filtering can be done
+			// server-side. This can save on API quota usage by reducing the
+			// number of pages of results that need to be requested.
+			apiReq = apiReq.Q(w.pod.TitleFilterStr)
+		}
 		checkTime := time.Now()
 		apiResp, err := apiReq.Do()
 		if err != nil {
