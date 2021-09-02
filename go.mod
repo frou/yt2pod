@@ -8,7 +8,7 @@ require (
 	github.com/frou/testext v0.0.0-20190909174932-26f10bb26699 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible
-	github.com/jbub/podcasts v0.0.0-20191231081020-eed23b8155bd
+	github.com/jbub/podcasts v0.1.0
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/magefile/mage v1.9.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
