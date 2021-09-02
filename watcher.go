@@ -226,12 +226,10 @@ func (w *watcher) writeFeed() error {
 			"Generated based on the videos of YouTube channel ",
 			w.pod.YTChannelReadableName)
 		if !w.pod.Epoch.IsZero() {
-			fmt.Fprintf(feedDesc, " published from %s onwards",
-				w.pod.EpochStr)
+			fmt.Fprintf(feedDesc, " published from %s onwards", w.pod.EpochStr)
 		}
-		if w.pod.TitleFilterStr != "" {
-			fmt.Fprintf(feedDesc, " with titles matching \"%s\"",
-				w.pod.TitleFilterStr)
+		if w.pod.TitleFilter != "" {
+			fmt.Fprintf(feedDesc, " with titles matching \"%s\"", w.pod.TitleFilter)
 		}
 	}
 
@@ -331,12 +329,12 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 			Order("date").
 			MaxResults(50).
 			PageToken(nextPageToken)
-		if w.pod.TitleFilterStrIsLiteral && w.pod.TitleFilterStr != "" {
+		if w.pod.TitleFilterIsLiteral && w.pod.TitleFilter != "" {
 			// When the user-specified title filter is a plain literal
 			// (doesn't use any regex syntax) then filtering can be done
 			// server-side. This can save on API quota usage by reducing the
 			// number of pages of results that need to be requested.
-			apiReq = apiReq.Q(w.pod.TitleFilterStr)
+			apiReq = apiReq.Q(w.pod.TitleFilter)
 		}
 		checkTime := time.Now()
 		apiResp, err := apiReq.Do()
@@ -350,7 +348,7 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 			if item.Id.Kind != "youtube#video" {
 				return nil, errors.New("non-video in response items")
 			}
-			if !w.pod.TitleFilter.MatchString(item.Snippet.Title) {
+			if !w.pod.TitleFilterRE.MatchString(item.Snippet.Title) {
 				// Not interested in this vid.
 				continue
 			}

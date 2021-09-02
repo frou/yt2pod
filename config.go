@@ -44,9 +44,9 @@ type podcast struct {
 	ShortName   string `json:"short_name"  validate:"required"`
 	Description string `json:"description" validate:"-"`
 
-	TitleFilterStr          string `json:"title_filter" validate:"-"`
-	TitleFilterStrIsLiteral bool
-	TitleFilter             *regexp.Regexp
+	TitleFilter          string `json:"title_filter" validate:"-"`
+	TitleFilterIsLiteral bool
+	TitleFilterRE        *regexp.Regexp
 
 	EpochStr string `json:"epoch" validate:"epochformat"`
 	Epoch    time.Time
@@ -133,13 +133,13 @@ func loadConfig(path string) (c *config, err error) {
 		c.Podcasts[i].Epoch = t
 
 		// Parse Title Filter
-		re, err := regexp.Compile(c.Podcasts[i].TitleFilterStr)
+		re, err := regexp.Compile(c.Podcasts[i].TitleFilter)
 		if err != nil {
 			return nil, fmt.Errorf("error in regex specified for title filter: %w", err)
 		}
-		_, c.Podcasts[i].TitleFilterStrIsLiteral = re.LiteralPrefix()
+		_, c.Podcasts[i].TitleFilterIsLiteral = re.LiteralPrefix()
 		// Force case-insensitive matching.
-		c.Podcasts[i].TitleFilter = regexp.MustCompile(fmt.Sprintf("(?i:%s)", re.String()))
+		c.Podcasts[i].TitleFilterRE = regexp.MustCompile(fmt.Sprintf("(?i:%s)", re.String()))
 	}
 
 	return c, err
