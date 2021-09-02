@@ -322,7 +322,7 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 		nextPageToken string
 	)
 	for {
-		apiReq := w.ytAPI.Search.List("id,snippet").
+		apiReq := w.ytAPI.Search.List([]string{"id", "snippet"}).
 			ChannelId(w.pod.YTChannelID).
 			Type("video").
 			PublishedAfter(pubdAfter.Format(time.RFC3339)).
@@ -374,7 +374,7 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 var ytChannelIDFormat = regexp.MustCompile("UC[[:alnum:]_-]{22}")
 
 func (w *watcher) getChannelInfo() error {
-	apiReq := w.ytAPI.Channels.List("id,snippet").MaxResults(1)
+	apiReq := w.ytAPI.Channels.List([]string{"id", "snippet"}).MaxResults(1)
 
 	switch w.pod.YTChannelHandleFormat {
 	case LegacyUsername:

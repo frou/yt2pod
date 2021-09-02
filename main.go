@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"google.golang.org/api/googleapi/transport"
+	"context"
+
+	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
 
@@ -65,10 +67,7 @@ func run(cfg *config) error {
 	}
 
 	for i := range cfg.Podcasts {
-		// @todo Heed deprecation warning on youtube.New(...) and use recommended alternative
-		ytAPI, err := youtube.New(&http.Client{
-			Transport: &transport.APIKey{Key: apiKey},
-		})
+		ytAPI, err := youtube.NewService(context.Background(), option.WithAPIKey(apiKey))
 		if err != nil {
 			return err
 		}
