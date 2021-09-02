@@ -65,6 +65,7 @@ func run(cfg *config) error {
 	}
 
 	for i := range cfg.Podcasts {
+		// @todo Heed deprecation warning on youtube.New(...) and use recommended alternative
 		ytAPI, err := youtube.New(&http.Client{
 			Transport: &transport.APIKey{Key: apiKey},
 		})
