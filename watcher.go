@@ -267,11 +267,12 @@ func (w *watcher) writeFeed() error {
 		}
 		epSize := info.Size()
 		epURL := w.buildURL(diskPath)
-		epSummary := &podcasts.ItunesSummary{Value: fmt.Sprintf(
-			`%s // <a href="%s/watch?v=%s">Link to original YouTube video</a>`,
-			vi.desc,
-			youtubeHomeUrl,
-			vi.id),
+		epSummary := &podcasts.ItunesSummary{
+			Value: fmt.Sprintf(
+				`%s // <a href="%s/watch?v=%s">Link to original YouTube video</a>`,
+				vi.desc,
+				youtubeHomeUrl,
+				vi.id),
 		}
 
 		enclosureType := "audio"

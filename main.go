@@ -1,13 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
-
-	"context"
 
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"

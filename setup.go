@@ -39,7 +39,7 @@ func setup() (*config, error) {
 		if err != nil {
 			return nil, err
 		}
-		//flags = log.Lshortfile
+		// flags = log.Lshortfile
 	} else {
 		w = os.Stderr
 		flags = log.Ldate | log.Ltime //| log.Lshortfile
