@@ -76,7 +76,10 @@ const (
 	LegacyUsername channelHandleFormat = iota
 	ChannelID
 	// @todo Support "Custom URL" channel identifiers in addition to Channel-IDs and Usernames
-	// Custom
+	// @body https://stackoverflow.com/questions/37267324/how-to-get-youtube-channel-details-using-youtube-data-api-if-channel-has-custom
+	// @body https://github.com/mattwright324/youtube-metadata/issues/1
+	// @body https://stackoverflow.com/questions/68490562/youtube-channel-with-custom-url-but-no-c-slug-in-url-does-not-return-snippet
+	// CustomUrl
 )
 
 const (
@@ -115,7 +118,7 @@ func loadConfig(path string) (c *config, err error) {
 			c.Podcasts[i].YTChannelHandleFormat = ChannelID
 		// case strings.HasPrefix(handle, youtubeCustomUrlPrefix):
 		// 	c.Podcasts[i].YTChannelHandle = strings.TrimPrefix(handle, youtubeCustomUrlPrefix)
-		// 	c.Podcasts[i].YTChannelHandleFormat = Custom
+		// 	c.Podcasts[i].YTChannelHandleFormat = CustomUrl
 		default:
 			log.Printf("Assuming that channel handle %q in config is a legacy YouTube username", handle)
 			c.Podcasts[i].YTChannelHandleFormat = LegacyUsername
