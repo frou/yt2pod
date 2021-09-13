@@ -16,6 +16,7 @@ const (
 	dataSubdirEpisodes = "ep"
 	dataSubdirMetadata = "meta"
 
+	// @todo Support `yt-dlp` as well as `youtube-dl` and give it priority.
 	downloadCmdName = "youtube-dl"
 
 	hitLoggingPeriod       = 24 * time.Hour
