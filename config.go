@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -23,6 +24,7 @@ type config struct {
 	ServePort              int       `json:"serve_port"               validate:"min=1,max=65535"`
 	ServeDirectoryListings bool      `json:"serve_directory_listings" validate:"-"`
 	LinkProxy              string    `json:"link_proxy"               validate:"omitempty,uri"`
+	DownloaderName         string    `json:"downloader_name"          validate:"-"`
 
 	// Watcher-related
 	CheckIntervalMinutes int    `json:"check_interval_minutes"  validate:"min=1"`
@@ -143,6 +145,28 @@ func loadConfig(path string) (c *config, err error) {
 		_, c.Podcasts[i].TitleFilterIsLiteral = re.LiteralPrefix()
 		// Force case-insensitive matching.
 		c.Podcasts[i].TitleFilterRE = regexp.MustCompile(fmt.Sprintf("(?i:%s)", re.String()))
+	}
+
+	// Listed in descending priority
+	defaultDownloaderNames := []string{
+		// REF: https://github.com/yt-dlp/yt-dlp
+		"yt-dlp",
+		// REF: https://github.com/blackjack4494/yt-dlc
+		"youtube-dlc",
+		// REF: https://github.com/ytdl-org/youtube-dl
+		"youtube-dl",
+	}
+	if c.DownloaderName == "" {
+		for _, candidateName := range defaultDownloaderNames {
+			if _, err := exec.LookPath(candidateName); err != nil {
+				continue
+			}
+			c.DownloaderName = candidateName
+			break
+		}
+	}
+	if c.DownloaderName == "" {
+		return nil, fmt.Errorf("No downloader command is available. Please install one of %v and ensure it's on PATH", defaultDownloaderNames)
 	}
 
 	return c, err

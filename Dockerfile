@@ -10,7 +10,7 @@ RUN go get -d ./... \
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates python3 py3-pip ffmpeg \
-&& pip3 install --disable-pip-version-check youtube-dl \
+&& pip3 install --disable-pip-version-check yt-dlp \
 && apk del py3-pip
 WORKDIR /root/
 COPY --from=0 /go/bin/yt2pod /usr/local/bin/

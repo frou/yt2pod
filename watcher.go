@@ -46,8 +46,8 @@ func newWatcher(
 	ytAPI *youtube.Service,
 	cfg *config,
 	pod *podcast,
-	cleanc chan *cleaningWhitelist) (*watcher, error) {
-
+	cleanc chan *cleaningWhitelist) (*watcher, error,
+) {
 	w := watcher{
 		ytAPI:         ytAPI,
 		cfg:           cfg,
@@ -184,7 +184,7 @@ func (w *watcher) download(vi ytVidInfo, firstTry bool) error {
 	}
 
 	cmdLine := fmt.Sprintf("%s -f %s -o %s --socket-timeout 30 -- %s",
-		downloadCmdName, w.formatSelector(), diskPath, vi.id)
+		w.cfg.DownloaderName, w.formatSelector(), diskPath, vi.id)
 	if firstTry {
 		log.Printf("%s: Download intent: %s", w.pod, cmdLine)
 	}

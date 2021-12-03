@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -85,21 +84,27 @@ func diskLow() (bool, error) {
 	return ok, nil
 }
 
+// @todo Update parsing of version number in health check, because yt-dlp at least can have a revision number after the YMD string
+// @body e.g. 2021.11.10.1
+// @body REF: https://github.com/yt-dlp/yt-dlp/blob/master/devscripts/update-version.py
+// @body REF: https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/version.py
 func ytdlOld() (bool, error) {
+	return false, nil
 	// @todo #0 Cache ytdl version output for a while to prevent reqs to /health causing DoS.
 	//  Because each request currently forks the ytdl process that takes ~2s to run.
-	version, err := exec.Command(downloadCmdName, "--version").Output()
-	if err != nil {
-		return false, err
-	}
-	versionTime, err := time.Parse(
-		"2006.1.2",
-		strings.TrimSpace(string(version)))
-	if err != nil {
-		return false, err
-	}
-	age := time.Since(versionTime)
-	return age > ytdlOldThreshold, nil
+	// version, err := exec.Command(downloadCmdName, "--version").Output()
+	// if err != nil {
+	// 	return false, err
+	// }
+
+	// versionTime, err := time.Parse(
+	// 	"2006.1.2",
+	// 	strings.TrimSpace(string(version)))
+	// if err != nil {
+	// 	return false, err
+	// }
+	// age := time.Since(versionTime)
+	// return age > ytdlOldThreshold, nil
 }
 
 func feedsStale() (bool, error) {

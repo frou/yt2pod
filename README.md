@@ -115,9 +115,13 @@ With the [Go toolchain](https://golang.org/dl/) installed, the following command
 
 `go get github.com/frou/yt2pod`
 
-The `yt2pod` binary should now be built and located in `~/go/bin` (or in `$GOPATH/bin` if your machine has a custom `GOPATH` defined).
+The `yt2pod` command should now be built and located in `~/go/bin` (or in `$GOPATH/bin` if your machine has a custom `GOPATH` defined).
 
-🚨 The `yt2pod` binary calls out to the [youtube-dl][ytdl] command at runtime. You should make sure you have `youtube-dl` installed (it is available in all good package managers).
+🚨 The `yt2pod` command calls out to the [`youtube-dl`][ytdl] command at runtime. You should make sure you have `youtube-dl` installed (it is available in all good package managers).
+
+* **UPDATE:** Since the `youtube-dl` project stopped being maintained in mid-2021, certain maintained forks of it (if installed) will be used instead.
+  * See `defaultDownloaderNames` in [this source file](https://github.com/frou/yt2pod/blob/master/config.go) for which ones.
+  * Or, explicitly specify a custom command name using `"downloader_name": "..."` in your config file.
 
 # Setting up as a Linux service
 

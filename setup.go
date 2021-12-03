@@ -55,12 +55,13 @@ func setup() (*config, error) {
 	}
 	log.Print("Config successfully loaded from ", *configPath)
 
-	// Up front, check that the youtube downloading command is available.
-	output, err := exec.Command(downloadCmdName, "--version").Output()
+	// Log the name and version of the downloader command that's configured/available.
+	versionOutput, err := exec.Command(cfg.DownloaderName, "--version").Output()
 	if err != nil {
-		return nil, errors.New(downloadCmdName + " command is not available")
+		// This also catches a custom downloader_name being set in the config file, but that command not existing on PATH.
+		return nil, fmt.Errorf("Couldn't determine configured downloader command's version: %w", err)
 	}
-	log.Printf("Version of %s is %s", downloadCmdName, output)
+	log.Printf("Downloader command is %s (currently version %s)", cfg.DownloaderName, versionOutput)
 
 	// Up front, check that a GET to a http_s_ server works (which needs CA
 	// certs to be present and correct in the OS)
