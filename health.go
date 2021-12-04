@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/frou/stdext"
@@ -33,11 +34,19 @@ const (
 	httpHealthPrefix = "/health/"
 )
 
-var healthConcerns = map[string]healthFunc{
-	"disk_low":    diskLow,
-	"ytdl_old":    downloaderOld,
-	"feeds_stale": feedsStale,
-}
+var (
+	healthConcerns = map[string]healthFunc{
+		"disk_low":    diskLow,
+		"ytdl_old":    downloaderOld,
+		"feeds_stale": feedsStale,
+	}
+
+	lastDownloaderVersionCheck struct {
+		mu     sync.Mutex
+		when   time.Time
+		result string
+	}
+)
 
 const (
 	// @todo #0 Make diskLowThreshold & ytdlOldThreshold customizable in the config file.
@@ -45,6 +54,8 @@ const (
 	downloaderOldThreshold = time.Hour * 24 * 60 // 60 days
 	// @todo #0 Make feedsStaleThreshold customizable per-podcast in the config file.
 	feedsStaleThreshold = time.Hour * 24 * 10 // 10 days
+
+	downloaderVersionCheckCacheDuration = time.Minute * 5
 )
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -88,12 +99,21 @@ func diskLow() (bool, error) {
 var yearMonthDayRevnumVersionRE = regexp.MustCompile(`^(\d+\.\d+\.\d+)(\.\d+)?$`)
 
 func downloaderOld() (bool, error) {
-	// @todo #0 Cache ytdl version output for a while to prevent reqs to /health causing DoS.
-	//  Because each request currently forks the ytdl process that takes ~2s to run.
-	version, err := getDownloaderCommandVersion()
-	if err != nil {
-		return false, err
+	var version string
+	lastDownloaderVersionCheck.mu.Lock()
+	defer lastDownloaderVersionCheck.mu.Unlock()
+	if time.Since(lastDownloaderVersionCheck.when) < downloaderVersionCheckCacheDuration {
+		version = lastDownloaderVersionCheck.result
+	} else {
+		var err error
+		version, err = getDownloaderCommandVersion()
+		if err != nil {
+			return false, err
+		}
+		lastDownloaderVersionCheck.when = time.Now()
+		lastDownloaderVersionCheck.result = version
 	}
+
 	submatches := yearMonthDayRevnumVersionRE.FindStringSubmatch(version)
 	if submatches == nil {
 		return false, fmt.Errorf("Can't parse downloader command's version output %q because it has an unexpected format", version)
