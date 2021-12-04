@@ -143,6 +143,9 @@ func loadConfig(path string) (c *config, err error) {
 			return nil, fmt.Errorf("error in regex specified for title filter: %w", err)
 		}
 		_, c.Podcasts[i].TitleFilterIsLiteral = re.LiteralPrefix()
+		if !c.Podcasts[i].TitleFilterIsLiteral {
+			log.Printf("Warning: title filter for %q contains regexp metacharacters so may cause high YouTube API quota usage", c.Podcasts[i].Name)
+		}
 		// Force case-insensitive matching.
 		c.Podcasts[i].TitleFilterRE = regexp.MustCompile(fmt.Sprintf("(?i:%s)", re.String()))
 	}

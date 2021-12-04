@@ -41,7 +41,12 @@ look at the URL and you will find either one or the other.
 time). Videos uploaded before the epoch are ignored.
 
 * `title_filter` is a regular expression. Videos with a title matching it have
-a podcast episode created for them. Use an empty string if you want them all.
+a podcast episode created for them.
+  * Use an empty string if you want them all.
+  * If you want to filter them, when possible, try to use a verbatim substring
+    of the video titles you are interested in (i.e. don't make use of any
+    regexp metacharacters), because this approach will cause less of your
+    YouTube Data API quota to be used up.
 
 * `name` is the name of the podcast to be shown to the user in their podcast
 client.
