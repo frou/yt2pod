@@ -25,18 +25,18 @@ import (
 // Request:
 //     /health
 // Response:
-//    disk_low      	OK
-//    downloader_old	CONCERN
-//    feeds_stale   	OK
+//    disk_low      OK
+//    ytdl_old      CONCERN
+//    feeds_stale   OK
 
 const (
 	httpHealthPrefix = "/health/"
 )
 
 var healthConcerns = map[string]healthFunc{
-	"disk_low":       diskLow,
-	"downloader_old": downloaderOld,
-	"feeds_stale":    feedsStale,
+	"disk_low":    diskLow,
+	"ytdl_old":    downloaderOld,
+	"feeds_stale": feedsStale,
 }
 
 const (

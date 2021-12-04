@@ -56,7 +56,7 @@ func setup() (*config, error) {
 	}
 	log.Print("Config successfully loaded from ", *configPath)
 
-	// Store a closure over cfg, so that the `downloader_old` health check can also make use of this function.
+	// Store a closure over cfg, so that the `downloaderOld` health check can also make use of this function.
 	getDownloaderCommandVersion = func() (string, error) {
 		versionBytes, err := exec.Command(cfg.DownloaderName, "--version").Output()
 		if err != nil {
