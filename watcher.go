@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"html"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -352,7 +353,7 @@ func (w *watcher) getLatest(pubdAfter time.Time) ([]ytVidInfo, error) {
 			// Even if we requested server-side filtering, that is fuzzy and
 			// often returns false-positives, so we always do client-side
 			// filtering.
-			if !w.pod.TitleFilterRE.MatchString(item.Snippet.Title) {
+			if !w.pod.TitleFilterRE.MatchString(html.UnescapeString(item.Snippet.Title)) {
 				// Not interested in this vid.
 				continue
 			}
