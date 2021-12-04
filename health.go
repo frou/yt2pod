@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -24,24 +25,24 @@ import (
 // Request:
 //     /health
 // Response:
-//    disk_low      OK
-//    ytdl_old      CONCERN
-//    feeds_stale   OK
+//    disk_low      	OK
+//    downloader_old	CONCERN
+//    feeds_stale   	OK
 
 const (
 	httpHealthPrefix = "/health/"
 )
 
 var healthConcerns = map[string]healthFunc{
-	"disk_low":    diskLow,
-	"ytdl_old":    ytdlOld,
-	"feeds_stale": feedsStale,
+	"disk_low":       diskLow,
+	"downloader_old": downloaderOld,
+	"feeds_stale":    feedsStale,
 }
 
 const (
 	// @todo #0 Make diskLowThreshold & ytdlOldThreshold customizable in the config file.
-	diskLowThreshold = 1024 * 1024 * 1024  // 1GB
-	ytdlOldThreshold = time.Hour * 24 * 60 // 60 days
+	diskLowThreshold       = 1024 * 1024 * 1024  // 1GB
+	downloaderOldThreshold = time.Hour * 24 * 60 // 60 days
 	// @todo #0 Make feedsStaleThreshold customizable per-podcast in the config file.
 	feedsStaleThreshold = time.Hour * 24 * 10 // 10 days
 )
@@ -84,27 +85,26 @@ func diskLow() (bool, error) {
 	return ok, nil
 }
 
-// @todo Update parsing of version number in health check, because yt-dlp at least can have a revision number after the YMD string
-// @body e.g. 2021.11.10.1
-// @body REF: https://github.com/yt-dlp/yt-dlp/blob/master/devscripts/update-version.py
-// @body REF: https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/version.py
-func ytdlOld() (bool, error) {
-	return false, nil
+var yearMonthDayRevnumVersionRE = regexp.MustCompile(`^(\d+\.\d+\.\d+)(\.\d+)?$`)
+
+func downloaderOld() (bool, error) {
 	// @todo #0 Cache ytdl version output for a while to prevent reqs to /health causing DoS.
 	//  Because each request currently forks the ytdl process that takes ~2s to run.
-	// version, err := exec.Command(downloadCmdName, "--version").Output()
-	// if err != nil {
-	// 	return false, err
-	// }
+	version, err := getDownloaderCommandVersion()
+	if err != nil {
+		return false, err
+	}
+	submatches := yearMonthDayRevnumVersionRE.FindStringSubmatch(version)
+	if submatches == nil {
+		return false, fmt.Errorf("Can't parse downloader command's version output %q because it has an unexpected format", version)
+	}
 
-	// versionTime, err := time.Parse(
-	// 	"2006.1.2",
-	// 	strings.TrimSpace(string(version)))
-	// if err != nil {
-	// 	return false, err
-	// }
-	// age := time.Since(versionTime)
-	// return age > ytdlOldThreshold, nil
+	versionTime, err := time.Parse("2006.1.2", submatches[1])
+	if err != nil {
+		return false, err
+	}
+	age := time.Since(versionTime)
+	return age > downloaderOldThreshold, nil
 }
 
 func feedsStale() (bool, error) {

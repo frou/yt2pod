@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/x509"
 	"errors"
 	"flag"
@@ -55,13 +56,21 @@ func setup() (*config, error) {
 	}
 	log.Print("Config successfully loaded from ", *configPath)
 
+	// Store a closure over cfg, so that the `downloader_old` health check can also make use of this function.
+	getDownloaderCommandVersion = func() (string, error) {
+		versionBytes, err := exec.Command(cfg.DownloaderName, "--version").Output()
+		if err != nil {
+			return "", err
+		}
+		return string(bytes.TrimSpace(versionBytes)), nil
+	}
 	// Log the name and version of the downloader command that's configured/available.
-	versionOutput, err := exec.Command(cfg.DownloaderName, "--version").Output()
+	version, err := getDownloaderCommandVersion()
 	if err != nil {
 		// This also catches a custom downloader_name being set in the config file, but that command not existing on PATH.
 		return nil, fmt.Errorf("Couldn't determine configured downloader command's version: %w", err)
 	}
-	log.Printf("Downloader command is %s (currently version %s)", cfg.DownloaderName, versionOutput)
+	log.Printf("Downloader command is %s (currently version %s)", cfg.DownloaderName, version)
 
 	// Up front, check that a GET to a http_s_ server works (which needs CA
 	// certs to be present and correct in the OS)
@@ -101,3 +110,6 @@ func setup() (*config, error) {
 
 	return cfg, nil
 }
+
+//nolint:gochecknoglobals
+var getDownloaderCommandVersion func() (string, error)
