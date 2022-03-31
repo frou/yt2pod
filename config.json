@@ -30,6 +30,13 @@
             "title_filter": "swing",
 
             "video": true
+        },
+        {
+            "name": "Stevey's Tech Talk",
+            "short_name": "yegge",
+
+            "yt_channel": "https://www.youtube.com/user/SteveYegge",
+            "title_filter": "\\b(Stevey's Tech Talk|STT)\\b"
         }
     ]
 }
