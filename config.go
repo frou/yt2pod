@@ -154,8 +154,6 @@ func loadConfig(path string) (c *config, err error) {
 	defaultDownloaderNames := []string{
 		// REF: https://github.com/yt-dlp/yt-dlp
 		"yt-dlp",
-		// REF: https://github.com/blackjack4494/yt-dlc
-		"youtube-dlc",
 		// REF: https://github.com/ytdl-org/youtube-dl
 		"youtube-dl",
 	}
