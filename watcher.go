@@ -415,7 +415,7 @@ func (w *watcher) getChannelInfo() error {
 			w.pod.YTChannelID = w.pod.YTChannelHandle
 		} else {
 			return fmt.Errorf(
-				"%s: Cannot continue due to being unable to discover the ChannelID for %q using the YT API. HINT: In the config file, writing the channel's ID (\"UC...\") directly instead of %[2]q will resolve this",
+				"%s: Cannot continue due to being unable to discover the ChannelID for %q using the YT API. HINT: In the config file, writing the channel's ID (\"UC...\") directly instead of %[2]q may resolve this",
 				w.pod, w.pod.YTChannelHandle)
 		}
 		log.Printf("%s: Unable to discover channel's readable name using the YT API, so making do with the handle from the config file", w.pod)
