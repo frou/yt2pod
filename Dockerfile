@@ -9,7 +9,7 @@ RUN go get -d ./... \
  && go install -buildvcs=false
 
 FROM alpine:latest
-RUN apk --no-cache add ca-certificates python3 py3-pip ffmpeg \
+RUN apk --no-cache add gcc g++ libc-dev ca-certificates python3 python3-dev py3-pip ffmpeg \
 && pip3 install --disable-pip-version-check yt-dlp \
 && apk del py3-pip
 WORKDIR /root/
