@@ -6,7 +6,7 @@ ADD . /go/src/github.com/frou/yt2pod/
 
 WORKDIR /go/src/github.com/frou/yt2pod/
 RUN go get -d ./... \
- && go install
+ && go install -buildvcs=false
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates python3 py3-pip ffmpeg \
