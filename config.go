@@ -37,6 +37,7 @@ type config struct {
 // ------------------------------------------------------------
 
 type podcast struct {
+	// The user should be encouraged to configure entire URLs for the handle, so that their Format is pre-disambiguated
 	YTChannelHandle       string `json:"yt_channel" validate:"required"`
 	YTChannelHandleFormat channelHandleFormat
 	YTChannelID           string
@@ -111,6 +112,8 @@ func loadConfig(path string) (c *config, err error) {
 
 	for i := range c.Podcasts {
 		handle := c.Podcasts[i].YTChannelHandle
+		// s, format = classifyChannelHandle(c.Podcasts[i].YTChannelHandle)
+		// handle :=
 		switch {
 		case strings.HasPrefix(handle, youtubeUserUrlPrefix):
 			c.Podcasts[i].YTChannelHandle = strings.TrimPrefix(handle, youtubeUserUrlPrefix)
@@ -140,7 +143,7 @@ func loadConfig(path string) (c *config, err error) {
 		// Parse Title Filter
 		re, err := regexp.Compile(c.Podcasts[i].TitleFilter)
 		if err != nil {
-			return nil, fmt.Errorf("error in regex specified for title filter: %w", err)
+			return nil, fmt.Errorf("Error in regex specified for title filter: %w", err)
 		}
 		_, c.Podcasts[i].TitleFilterIsLiteral = re.LiteralPrefix()
 		if !c.Podcasts[i].TitleFilterIsLiteral {
