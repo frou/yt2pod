@@ -94,6 +94,7 @@ const (
 
 // ------------------------------------------------------------
 
+//nolint:gocognit
 func loadConfig(path string) (c *config, err error) {
 	// Load & decode config from disk.
 	buf, err := ioutil.ReadFile(path)

@@ -34,6 +34,7 @@ const (
 	httpHealthPrefix = "/health/"
 )
 
+//nolint:gochecknoglobals
 var (
 	healthConcerns = map[string]healthFunc{
 		"disk_low":    diskLow,
@@ -150,4 +151,5 @@ func (t *concTime) Set(val time.Time) {
 	t.a.Replace(val)
 }
 
+//nolint:gochecknoglobals
 var lastTimeAnyFeedWritten = newConcTime()
