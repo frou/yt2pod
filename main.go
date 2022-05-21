@@ -36,10 +36,6 @@ var (
 
 	printVersion = flag.Bool("version", false,
 		"print version information then exit")
-
-	// These get set by the Magefile
-	stampedBuildVersion = "unknown-version"
-	stampedBuildTime    = "unknown-time"
 )
 
 func main() {

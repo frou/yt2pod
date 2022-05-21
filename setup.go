@@ -13,18 +13,39 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/frou/stdext"
 	"github.com/frou/yt2pod/internal/xplatform"
 )
 
+func introspectOwnVersion() string {
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "unknown-version"
+	}
+
+	buildSettings := make(map[string]string)
+	for _, kvp := range buildInfo.Settings {
+		if strings.HasPrefix(kvp.Key, "vcs") {
+			buildSettings[kvp.Key] = kvp.Value
+		}
+	}
+	dirtyIndicator := ""
+	if buildSettings["vcs.modified"] == "true" {
+		dirtyIndicator = "-dirty"
+	}
+	return fmt.Sprintf("%s-%s%s", buildSettings["vcs"], buildSettings["vcs.revision"][:7], dirtyIndicator)
+}
+
 func setup() (*config, error) {
 	flag.Parse()
 
+	ownVersion := introspectOwnVersion()
 	if *printVersion {
-		fmt.Fprintln(os.Stdout, "Version\t", stampedBuildVersion)
-		fmt.Fprintln(os.Stdout, "Built\t", stampedBuildTime)
+		fmt.Println("Version:", ownVersion)
 		os.Exit(0)
 	}
 
@@ -47,7 +68,7 @@ func setup() (*config, error) {
 	}
 	log.SetOutput(w)
 	log.SetFlags(flags)
-	log.Printf("Version %s", stampedBuildVersion)
+	log.Printf("Version: %s", ownVersion)
 
 	// Load config from disk.
 	cfg, err := loadConfig(*configPath)
