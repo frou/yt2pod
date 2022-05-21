@@ -97,11 +97,12 @@ func setup() (*config, error) {
 	// certs to be present and correct in the OS)
 	secureResp, err := http.Get("https://www.googleapis.com/")
 	if err != nil {
-		if urlErr, ok := err.(*url.Error); ok {
-			if sysRootsErr, ok := urlErr.Err.(x509.SystemRootsError); ok {
-				return nil, sysRootsErr
-			}
+		var urlErr *url.Error
+		var sysRootsErr *x509.SystemRootsError
+		if errors.As(err, &urlErr) && errors.As(urlErr.Err, &sysRootsErr) {
+			return nil, sysRootsErr
 		}
+		// Not the specific thing we are proactively checking for, so just log it and continue.
 		log.Print(err)
 	} else {
 		secureResp.Body.Close()

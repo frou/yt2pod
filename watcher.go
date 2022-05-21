@@ -197,7 +197,7 @@ func (w *watcher) download(vi ytVidInfo, firstTry bool) error {
 
 	err := cmd.Run()
 	if err != nil {
-		err = fmt.Errorf("%v: %s", err, errBuf.String())
+		err = fmt.Errorf("%w: %s", err, errBuf.String())
 	}
 	return err
 }
@@ -461,12 +461,12 @@ func (w *watcher) getChannelImage(channel *youtube.Channel) (image.Image, error)
 		}
 		f, err := os.Open(w.pod.CustomImagePath)
 		if err != nil {
-			return nil, fmt.Errorf("%s: custom image: %v", w.pod, err)
+			return nil, fmt.Errorf("%s: custom image: %w", w.pod, err)
 		}
 		defer f.Close()
 		img, _, err := image.Decode(f)
 		if err != nil {
-			return nil, fmt.Errorf("%s: custom image: %v", w.pod, err)
+			return nil, fmt.Errorf("%s: custom image: %w", w.pod, err)
 		}
 		log.Printf("%s: Using custom image from path %s", w.pod, w.pod.CustomImagePath)
 		return img, nil
