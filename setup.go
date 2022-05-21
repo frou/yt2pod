@@ -44,7 +44,7 @@ func setup() (*config, error) {
 	flag.Parse()
 
 	ownVersion := introspectOwnVersion()
-	if *printVersion {
+	if *flagPrintVersion {
 		fmt.Println("Version:", ownVersion)
 		os.Exit(0)
 	}
@@ -55,7 +55,7 @@ func setup() (*config, error) {
 		flags int
 		err   error
 	)
-	if *useSyslog {
+	if *flagUseSyslog {
 		executableName := filepath.Base(os.Args[0])
 		w, err = xplatform.NewSyslog(executableName)
 		if err != nil {
@@ -71,11 +71,11 @@ func setup() (*config, error) {
 	log.Printf("Version: %s", ownVersion)
 
 	// Load config from disk.
-	cfg, err := loadConfig(*configPath)
+	cfg, err := loadConfig(*flagConfigPath)
 	if err != nil {
 		return nil, errors.New("config: " + err.Error())
 	}
-	log.Print("Config successfully loaded from ", *configPath)
+	log.Print("Config successfully loaded from ", *flagConfigPath)
 
 	// Store a closure over cfg, so that the `downloaderOld` health check can also make use of this function.
 	getDownloaderCommandVersion = func() (string, error) {
@@ -109,12 +109,12 @@ func setup() (*config, error) {
 	}
 
 	// Create the data directory.
-	err = os.Mkdir(*dataPath, stdext.OwnerWritableDir)
+	err = os.Mkdir(*flagDataPath, stdext.OwnerWritableDir)
 	if err != nil && !os.IsExist(err) {
 		return nil, err
 	}
 	// Change into it (don't want to expose our config file when webserving).
-	if err := os.Chdir(*dataPath); err != nil {
+	if err := os.Chdir(*flagDataPath); err != nil {
 		return nil, err
 	}
 	// Create its subdirectories.

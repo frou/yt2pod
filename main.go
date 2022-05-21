@@ -22,19 +22,19 @@ const (
 )
 
 var (
-	useSyslog = flag.Bool("syslog", false,
+	flagUseSyslog = flag.Bool("syslog", false,
 		"send log statements to syslog rather than writing them to stderr")
 
-	configPath = flag.String("config", "config.json",
+	flagConfigPath = flag.String("config", "config.json",
 		"path to config file")
 
-	dataPath = flag.String("data", "data",
+	flagDataPath = flag.String("data", "data",
 		"path to directory to change into and write data (created if needed)")
 
-	dataClean = flag.Bool("dataclean", false,
+	flagDataClean = flag.Bool("dataclean", false,
 		"during initialisation, remove files in the data directory that are irrelevant given the current config")
 
-	printVersion = flag.Bool("version", false,
+	flagPrintVersion = flag.Bool("version", false,
 		"print version information then exit")
 )
 
@@ -55,7 +55,7 @@ func run(cfg *config) error {
 	log.Printf("Using YouTube Data API key ending %s", apiKey[len(apiKey)-5:])
 
 	var cleanc chan *cleaningWhitelist
-	if *dataClean {
+	if *flagDataClean {
 		cleanc = make(chan *cleaningWhitelist)
 	}
 
@@ -72,7 +72,7 @@ func run(cfg *config) error {
 		go wat.watch()
 	}
 
-	if *dataClean {
+	if *flagDataClean {
 		n, err := clean(len(cfg.Podcasts), cleanc)
 		if err != nil {
 			return err

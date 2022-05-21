@@ -105,7 +105,7 @@ func (w *watcher) watch() {
 			continue
 		}
 
-		if *dataClean && w.initialCheck {
+		if *flagDataClean && w.initialCheck {
 			w.sendCleaningWhitelist(latestVids)
 		}
 
