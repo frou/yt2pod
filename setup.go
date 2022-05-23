@@ -14,7 +14,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime/debug"
-	"strings"
 	"time"
 
 	"github.com/frou/stdext"
@@ -22,22 +21,29 @@ import (
 )
 
 func introspectOwnVersion() string {
-	buildInfo, ok := debug.ReadBuildInfo()
-	if !ok {
-		return "unknown-version"
-	}
-
-	buildSettings := make(map[string]string)
-	for _, kvp := range buildInfo.Settings {
-		if strings.HasPrefix(kvp.Key, "vcs") {
-			buildSettings[kvp.Key] = kvp.Value
+	if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		var vcs, vcsRevision, vcsModified *string
+		for _, kvp := range buildInfo.Settings {
+			value := kvp.Value
+			switch kvp.Key {
+			case "vcs":
+				vcs = &value
+			case "vcs.revision":
+				vcsRevision = &value
+			case "vcs.modified":
+				vcsModified = &value
+			}
+		}
+		if vcs != nil && vcsRevision != nil && vcsModified != nil {
+			dirtyIndicator := ""
+			if *vcsModified == "true" {
+				dirtyIndicator = "-dirty"
+			}
+			// Abbreviate the SHA to seven hex characters like git itself does.
+			return fmt.Sprintf("%s-%s%s", *vcs, (*vcsRevision)[:7], dirtyIndicator)
 		}
 	}
-	dirtyIndicator := ""
-	if buildSettings["vcs.modified"] == "true" {
-		dirtyIndicator = "-dirty"
-	}
-	return fmt.Sprintf("%s-%s%s", buildSettings["vcs"], buildSettings["vcs.revision"][:7], dirtyIndicator)
+	return "unknown-version"
 }
 
 func setup() (*config, error) {
