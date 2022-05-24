@@ -1,11 +1,11 @@
 FROM golang:alpine AS builder
 
+RUN apk --no-cache add git
+
 RUN mkdir /build_dir
-
-ADD .      /build_dir
-ADD ./.git /build_dir/.git
-
+ADD . /build_dir
 WORKDIR /build_dir
+
 RUN go build
 
 FROM alpine:latest
