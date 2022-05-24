@@ -104,13 +104,27 @@ This project has a [Dockerfile](https://github.com/frou/yt2pod/blob/master/Docke
 
 Get the Dockerfile by cloning this repository and then use the following command to build the Docker image:
 
-`docker build . -t yt2pod`
+`docker build . --tag yt2pod`
 
 It can then be run using, for example, the following command:
 
 `docker run -v $PWD:/root -p 8888:8120 yt2pod`
 
 After you see from the output that it has successfully started, visit http://localhost:8888/ in your browser to see what's being served.
+
+## Files and persistence with Docker
+
+<!--
+@todo Start using --mount instead of -v , like the docs recommend?
+@body https://docs.docker.com/storage/bind-mounts/#choose-the--v-or---mount-flag
+-->
+
+The `-v $PWD:/root` part of the `docker run` command above establishes a [Bind Mount](https://docs.docker.com/storage/bind-mounts/) between the current directory on the host machine and the working directory that `yt2pod` uses within the container. The two notable effects of this are:
+
+1. It allows `yt2pod` to read and use the example config file that is provided as part of this repository (`config.json`). You will want to edit this config file. The container itself does not have a config file baked into it.
+2. The files that `yt2pod` creates (audio/video, cover-art, RSS feeds) will not be lost if/when the container exits, because they will be written inside a subdirectory of the current directory on the host machine.
+
+For different usage scenarios, you might want to run with a [Named Volume](https://docs.docker.com/storage/volumes/) instead of a Bind Mount, and/or alter the [Dockerfile](https://github.com/frou/yt2pod/blob/master/Dockerfile) to bake your custom config file into the container image.
 
 ---
 
