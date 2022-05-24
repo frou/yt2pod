@@ -116,9 +116,9 @@ After you see from the output that it has successfully started, visit http://loc
 
 # Building manually
 
-With the [Go toolchain](https://golang.org/dl/) installed, the following command will download the source code and build it:
+Assuming you already have the Go toolchain (installed from your package manager, or from [here](https://golang.org/dl/)), run the following, which will download this project's source code and build it:
 
-`go get github.com/frou/yt2pod`
+`go install github.com/frou/yt2pod@latest`
 
 The `yt2pod` command should now be built and located in `~/go/bin` (or in `$GOPATH/bin` if your machine has a custom `GOPATH` defined).
 
