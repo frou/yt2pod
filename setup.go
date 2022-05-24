@@ -21,6 +21,8 @@ import (
 )
 
 func introspectOwnVersion() string {
+	// REF: The `go` command's compile-time interaction with external VCS commands:
+	// https://github.com/golang/go/blob/master/src/cmd/go/internal/vcs/vcs.go
 	if buildInfo, ok := debug.ReadBuildInfo(); ok {
 		var vcs, vcsRevision, vcsModified *string
 		for _, kvp := range buildInfo.Settings {
@@ -35,15 +37,24 @@ func introspectOwnVersion() string {
 			}
 		}
 		if vcs != nil && vcsRevision != nil && vcsModified != nil {
+			revision := *vcsRevision
+			if *vcs == "git" {
+				// Abbreviate the SHA for display, like git itself does.
+				const revisionAbbrevLen = 7
+				if len(revision) > revisionAbbrevLen {
+					revision = revision[:revisionAbbrevLen]
+				}
+			}
+
 			dirtyIndicator := ""
 			if *vcsModified == "true" {
 				dirtyIndicator = "-dirty"
 			}
-			// Abbreviate the SHA to seven hex characters like git itself does.
-			return fmt.Sprintf("%s-%s%s", *vcs, (*vcsRevision)[:7], dirtyIndicator)
+
+			return fmt.Sprintf("%s-%s%s", *vcs, revision, dirtyIndicator)
 		}
 	}
-	return "unknown-version"
+	return "unknown"
 }
 
 func setup() (*config, error) {
