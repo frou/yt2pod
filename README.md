@@ -108,21 +108,16 @@ Get the Dockerfile by cloning this repository and then use the following command
 
 It can then be run using, for example, the following command:
 
-`docker run -v $PWD:/root -p 8888:8120 yt2pod`
+`docker run --mount "type=bind,src=$PWD,dst=/srv" --publish 8888:8120 yt2pod`
 
-After you see from the output that it has successfully started, visit http://localhost:8888/ in your browser to see what's being served.
+After you see from the output that it has successfully started, visit http://localhost:8888/ in your browser to see what's being served. Note that the filenames in the `ep` directory are not intended to be meaningful; it's the RSS feeds in the `meta` directory that give each podcast episode its proper title.
 
 ## Files and persistence with Docker
 
-<!--
-@todo Start using --mount instead of -v , like the docs recommend?
-@body https://docs.docker.com/storage/bind-mounts/#choose-the--v-or---mount-flag
--->
+The `--mount` part of the `docker run` command above establishes a [Bind Mount](https://docs.docker.com/storage/bind-mounts/) between the current directory on the host machine and the working directory that `yt2pod` uses within the container. The two notable effects of this are:
 
-The `-v $PWD:/root` part of the `docker run` command above establishes a [Bind Mount](https://docs.docker.com/storage/bind-mounts/) between the current directory on the host machine and the working directory that `yt2pod` uses within the container. The two notable effects of this are:
-
-1. It allows `yt2pod` to read and use the example config file that is provided as part of this repository (`config.json`). You will want to edit this config file. The container itself does not have a config file baked into it.
-2. The files that `yt2pod` creates (audio/video, cover-art, RSS feeds) will not be lost if/when the container exits, because they will be written inside a subdirectory of the current directory on the host machine.
+1. It allows `yt2pod` to read and use the example config file that is provided as part of this repository (`config.json`). You will want to edit this config file. The container image itself does not have a config file baked into it.
+2. The files that `yt2pod` creates (audio/video, cover-art, RSS feeds) will not be lost if/when later using a rebuilt container image (e.g. `yt2pod` with a bugfix), because they will exist under the current directory on the host machine. Without doing this, they would exist only inside a specific container's internal filesystem.
 
 For different usage scenarios, you might want to run with a [Named Volume](https://docs.docker.com/storage/volumes/) instead of a Bind Mount, and/or alter the [Dockerfile](https://github.com/frou/yt2pod/blob/master/Dockerfile) to bake your custom config file into the container image.
 

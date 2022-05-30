@@ -1,17 +1,15 @@
+# REF: https://hub.docker.com/_/golang
 FROM golang:alpine AS builder
-
+WORKDIR /root/build
+ADD . .
+# The go compiler will use its version-stamping capability if git is available.
 RUN apk --no-cache add git
-
-RUN mkdir /build_dir
-ADD . /build_dir
-WORKDIR /build_dir
-
 RUN go build
 
+# REF: https://hub.docker.com/_/alpine
 FROM alpine:latest
-RUN apk --no-cache add gcc g++ libc-dev ca-certificates python3 python3-dev py3-pip ffmpeg \
-&& pip3 install --disable-pip-version-check yt-dlp \
-&& apk del gcc g++ libc-dev python3-dev py3-pip
-WORKDIR /root/
-COPY --from=builder /build_dir/yt2pod /usr/local/bin/
+COPY --from=builder /root/build/yt2pod /usr/local/bin/
+# Install the runtime dependencies of yt2pod
+RUN apk --no-cache add ca-certificates yt-dlp
+WORKDIR /srv
 CMD ["yt2pod", "-dataclean"]
