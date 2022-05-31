@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/frou/poor-mans-generics/set"
 	"github.com/go-playground/validator/v10"
+	"github.com/zyedidia/generic/mapset"
 )
 
 type config struct {
@@ -192,19 +192,19 @@ func initValidator() *validator.Validate {
 
 	validate.RegisterStructValidation(func(sl validator.StructLevel) {
 		c, _ := sl.Current().Interface().(config)
-		var podcastShortNameSet set.Strings
+		podcastShortNameSet := mapset.New[string]()
 		for i := range c.Podcasts {
 			sn := c.Podcasts[i].ShortName
-			if podcastShortNameSet.Contains(sn) {
+			if podcastShortNameSet.Has(sn) {
 				sl.ReportError(
 					c.Podcasts,
 					fmt.Sprintf("podcasts[%d].short_name", i),
 					"",
-					fmt.Sprintf("Multiple podcasts are using the same %q short_name", sn),
+					fmt.Sprintf("Can't use %q because another configured podcast already uses it", sn),
 					"")
 				continue
 			}
-			podcastShortNameSet.Add(sn)
+			podcastShortNameSet.Put(sn)
 		}
 	}, config{})
 

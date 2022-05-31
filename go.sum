@@ -68,8 +68,6 @@ github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.m
 github.com/envoyproxy/go-control-plane v0.9.9-0.20210217033140-668b12f5399d/go.mod h1:cXg6YxExXjJnVBQHBLXeUAgxn2UodCpnH306RInaBQk=
 github.com/envoyproxy/go-control-plane v0.9.9-0.20210512163311-63b5d3c536b0/go.mod h1:hliV/p42l8fGbc6Y9bQ70uLwIvmJyVE5k4iMKlh8wCQ=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/frou/poor-mans-generics v0.0.0-20181024095521-2ccba2ef9f15 h1:U4XBD2iLb1S3SIptvy1RNh0FN6+fY4C66MR5rAFyhWs=
-github.com/frou/poor-mans-generics v0.0.0-20181024095521-2ccba2ef9f15/go.mod h1:n1DtRBt+7JDljOn4r51W/o5N8E8h653UeLty8JpvgUM=
 github.com/frou/stdext v0.0.0-20190909174947-20d00569c4d9 h1:caCpZw0A/TXbiIRECD+qpjttKfmecGM2E6VNyTtkagc=
 github.com/frou/stdext v0.0.0-20190909174947-20d00569c4d9/go.mod h1:kL2LsXijQ3grRmuK62ToJDYDxQkvZfN3J381Fy8LRcc=
 github.com/frou/testext v0.0.0-20190909174932-26f10bb26699 h1:Dm37qnwqG471QtRpu6QS4bZNz1Lv9yzmdzXVxIkyAwA=
@@ -200,6 +198,8 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
+github.com/zyedidia/generic v1.0.0 h1:uZL4/2Pv014Cb8bJQuvh30toyaFZ9WpCPg6pIhPu47o=
+github.com/zyedidia/generic v1.0.0/go.mod h1:ly2RBz4mnz1yeuVbQA/VFwGjK3mnHGRj1JuoG336Bis=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

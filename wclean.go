@@ -5,18 +5,18 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/frou/poor-mans-generics/set"
+	"github.com/zyedidia/generic/mapset"
 )
 
 // Remove files in the data directory that are no longer relevant given the
 // configuration file we're using.
 func clean(podcastCount int, cleanc <-chan *cleaningWhitelist) (int, error) {
-	var keepers set.Strings
+	keepers := mapset.New[string]()
 
 	for i := 0; i < podcastCount; i++ {
 		wl := <-cleanc
 		for _, p := range wl.paths {
-			keepers.Add(p)
+			keepers.Put(p)
 		}
 		defer close(wl.cleanFinishedC)
 	}
@@ -30,7 +30,7 @@ func clean(podcastCount int, cleanc <-chan *cleaningWhitelist) (int, error) {
 		}
 		for _, info := range dirContents {
 			path := filepath.Join(subd, info.Name())
-			if keepers.Contains(path) {
+			if keepers.Has(path) {
 				continue
 			}
 			if err := os.Remove(path); err != nil {
