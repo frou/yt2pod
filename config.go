@@ -81,7 +81,10 @@ const (
 	// @body https://stackoverflow.com/questions/37267324/how-to-get-youtube-channel-details-using-youtube-data-api-if-channel-has-custom
 	// @body https://github.com/mattwright324/youtube-metadata/issues/1
 	// @body https://stackoverflow.com/questions/68490562/youtube-channel-with-custom-url-but-no-c-slug-in-url-does-not-return-snippet
-	// CustomUrl
+	//CustomUrl
+	// @todo Yet another possibility has been introduced: @handles
+	// @body https://support.google.com/youtube/answer/6180214
+	// @body https://support.google.com/youtube/answer/11585688
 )
 
 const (
